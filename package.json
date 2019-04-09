@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node node_modules/node-red/red.js -v -u .",
     "start:dev": "cp deploy/.env_dev .env ; NODE_ENV=development node ./index.js",
-    "start:local": "cp deploy/.env_local .env ; pm2 start ecosystem.config.js"
+    "start:local": "cp deploy/.env_local .env ; pm2 startOrRestart ecosystem.config.js --update-env"
   },
   "dependencies": {
     "dotenv": "^7.0.0",
