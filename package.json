@@ -1,0 +1,74 @@
+{
+  "name": "node-red-bridge",
+  "version": "0.0.5",
+  "description": "Node-RED bridge",
+  "scripts": {
+    "start": "node node_modules/node-red/red.js -v -u .",
+    "start:dev": "cp deploy/.env_dev .env ; NODE_ENV=development node ./index.js",
+    "start:local": "cp deploy/.env_local .env ; pm2 start ecosystem.config.js"
+  },
+  "dependencies": {
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "node-red": "^0.20.3",
+    "node-red-admin": "^0.1.5",
+    "node-red-contrib-micropi": "^1.0.5",
+    "node-red-dashboard": "^2.14.0",
+    "node-red-node-email": "~1.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.8.0",
+    "nodemon": "^1.18.8",
+    "prettier": "1.16.1"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "es6": true,
+      "node": true
+    },
+    "extends": [
+      "airbnb-base",
+      "loopback",
+      "prettier"
+    ],
+    "plugins": [
+      "babel"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2018,
+      "parser": "babel-eslint"
+    },
+    "rules": {
+      "import/no-unresolved": "off",
+      "import/extensions": "off",
+      "import/prefer-default-export": "off",
+      "no-param-reassign": "off",
+      "one-var-declaration-per-line": "off"
+    },
+    "globals": {
+      "require": true
+    }
+  },
+  "eslintIgnore": [
+    "/public/",
+    ".config.json",
+    "/docs/",
+    "/node_modules/"
+  ],
+  "prettier": {
+    "bracketSpacing": false,
+    "singleQuote": true,
+    "printWidth": 80,
+    "trailingComma": "all"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://framagit.org/getlarge/node-red-bridge.git"
+  },
+  "keywords": [
+    "lora",
+    "mqtt",
+    "node-red"
+  ]
+}
