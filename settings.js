@@ -147,6 +147,7 @@ module.exports = {
     //    context.global.os
 
     functionGlobalContext: {
+        processEnv: process.env,
         // moment:require('moment')
         // os:require('os'),
         // octalbonescript:require('octalbonescript'),

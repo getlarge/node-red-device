@@ -12,8 +12,6 @@
     "express": "^4.16.4",
     "node-red": "^0.20.3",
     "node-red-admin": "^0.1.5",
-    "node-red-contrib-micropi": "^1.0.5",
-    "node-red-contrib-speakerpi": "0.0.42",
     "node-red-dashboard": "^2.14.0",
     "node-red-node-email": "~1.3.0"
   },

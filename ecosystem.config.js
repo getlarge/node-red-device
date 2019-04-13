@@ -9,7 +9,7 @@ if (result.error) {
 module.exports = {
   apps: [
     {
-      name: `${result.parsed.NODE_NAME}`,
+      name: `${result.parsed.DEVICE_NAME}-${result.parsed.NODE_ENV}`,
       script: './lib/server.js',
       interpreter: 'node',
       watch: ['lib', 'deploy'],
@@ -17,8 +17,12 @@ module.exports = {
       watch_options: {
         followSymlinks: false,
       },
-      output: `./log/${result.parsed.NODE_NAME}.out.log`,
-      error: `./log/${result.parsed.NODE_NAME}.error.log`,
+      output: `./log/${result.parsed.DEVICE_NAME}-${
+        result.parsed.NODE_ENV
+      }.out.log`,
+      error: `./log/${result.parsed.DEVICE_NAME}-${
+        result.parsed.NODE_ENV
+      }.error.log`,
       max_memory_restart: '512M',
       restart_delay: 500,
       wait_ready: true,
@@ -35,4 +39,3 @@ module.exports = {
     },
   ],
 };
-

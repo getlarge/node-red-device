@@ -3,7 +3,8 @@ const nodemon = require('nodemon');
 nodemon({
   script: 'lib/server.js',
   ext: 'js json',
-  ignore: ['*.test.js', '*.json'],
+  ignore: ['nodes_modules', '*.test.js', '*.json'],
+  watch: ['lib/*', '*.js'],
 });
 
 nodemon
