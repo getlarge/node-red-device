@@ -1,7 +1,7 @@
 {
-  "name": "node-red-bridge",
+  "name": "node-red-device",
   "version": "0.0.5",
-  "description": "Node-RED bridge",
+  "description": "Node-RED device",
   "scripts": {
     "start": "node node_modules/node-red/red.js -v -u .",
     "start:dev": "cp deploy/.env_dev .env ; NODE_ENV=development node ./index.js",
@@ -13,6 +13,7 @@
     "node-red": "^0.20.3",
     "node-red-admin": "^0.1.5",
     "node-red-contrib-micropi": "^1.0.5",
+    "node-red-contrib-speakerpi": "0.0.42",
     "node-red-dashboard": "^2.14.0",
     "node-red-node-email": "~1.3.0"
   },
@@ -64,10 +65,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://framagit.org/getlarge/node-red-bridge.git"
+    "url": "https://framagit.org/getlarge/node-red-device.git"
   },
   "keywords": [
-    "lora",
+    "iot",
+    "aloes",
     "mqtt",
     "node-red"
   ]
