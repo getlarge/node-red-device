@@ -3,7 +3,13 @@ const nodemon = require('nodemon');
 nodemon({
   script: 'lib/server.js',
   ext: 'js json',
-  ignore: ['nodes_modules', '*.test.js', '*.json'],
+  ignore: [
+    'lib/flows/*',
+    'lib/uitemplates/*',
+    'nodes_modules',
+    '*.test.js',
+    '*.json',
+  ],
   watch: ['lib/*', '*.js'],
 });
 
@@ -18,6 +24,3 @@ nodemon
   .on('restart', function(files) {
     console.log('App restarted due to: ', files);
   });
-
-
-  

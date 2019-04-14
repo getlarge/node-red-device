@@ -12,7 +12,12 @@ module.exports = {
       script: './lib/server.js',
       interpreter: 'node',
       watch: ['lib', 'deploy'],
-      ignore_watch: ['node_modules', '*.json'],
+      ignore_watch: [
+        'lib/flows/*',
+        'lib/uitemplates/*',
+        'node_modules',
+        '*.json',
+      ],
       watch_options: {
         followSymlinks: false,
       },
