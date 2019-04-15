@@ -3,6 +3,7 @@
   "version": "0.0.5",
   "description": "Node-RED device",
   "scripts": {
+    "lint": "npx eslint --ext js .",
     "start": "node node_modules/node-red/red.js -v -u .",
     "start:dev": "cp deploy/.env_dev .env ; NODE_ENV=development node ./index.js",
     "start:local": "cp deploy/.env_local .env ; pm2 startOrRestart ecosystem.config.js --update-env"
@@ -17,6 +18,9 @@
   },
   "devDependencies": {
     "eslint": "^5.8.0",
+    "eslint-config-prettier": "^3.1.0",
+    "eslint-plugin-babel": "^5.3.0",
+    "eslint-plugin-prettier": "^2.6.2",
     "nodemon": "^1.18.8",
     "prettier": "1.16.1"
   },
@@ -27,12 +31,11 @@
       "node": true
     },
     "extends": [
-      "airbnb-base",
-      "loopback",
       "prettier"
     ],
     "plugins": [
-      "babel"
+      "babel",
+      "prettier"
     ],
     "parserOptions": {
       "ecmaVersion": 2018,
@@ -43,7 +46,8 @@
       "import/extensions": "off",
       "import/prefer-default-export": "off",
       "no-param-reassign": "off",
-      "one-var-declaration-per-line": "off"
+      "one-var-declaration-per-line": "off",
+      "prettier/prettier": "error"
     },
     "globals": {
       "require": true
@@ -56,9 +60,11 @@
     "/node_modules/"
   ],
   "prettier": {
-    "bracketSpacing": false,
+    "bracketSpacing": true,
     "singleQuote": true,
-    "printWidth": 80,
+    "printWidth": 100,
+    "tabWidth": 2,
+    "jsxBracketSameLine": true,
     "trailingComma": "all"
   },
   "repository": {
