@@ -38,9 +38,10 @@ node_modules
 # Node-RED
 .config.json
 .sessions.json
-*.json.backup
+*json.backup
 flows_cred.json
 flows.json
+context/
 
 # Environment variables
 .env
