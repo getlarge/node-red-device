@@ -1,35 +1,28 @@
 [
     {
-        "id": "ae9ccaa4.46eba8",
-        "type": "tab",
-        "label": "Device flow",
-        "disabled": false,
-        "info": ""
-    },
-    {
-        "id": "aed39a0a.3b8fc8",
+        "id": "214b4b40.96efc4",
         "type": "subflow",
-        "name": "updateSensor",
+        "name": "Internal API",
         "info": "",
         "category": "",
         "in": [
             {
-                "x": 260,
-                "y": 220,
+                "x": 120,
+                "y": 320,
                 "wires": [
                     {
-                        "id": "a51a8dc7.b1584"
+                        "id": "65909a4e.6444e4"
                     }
                 ]
             }
         ],
         "out": [
             {
-                "x": 580,
-                "y": 200,
+                "x": 1060,
+                "y": 320,
                 "wires": [
                     {
-                        "id": "a51a8dc7.b1584",
+                        "id": "57939414.0d6b54",
                         "port": 0
                     }
                 ]
@@ -42,19 +35,176 @@
                 "value": "true"
             },
             {
-                "name": "device_name",
-                "type": "str",
-                "value": ""
+                "name": "node_red_admin_passhash",
+                "type": "env",
+                "value": "NODE_RED_ADMIN_PASSHASH"
             },
             {
-                "name": "store_type",
-                "type": "str",
-                "value": "memory"
+                "name": "node_red_host",
+                "type": "env",
+                "value": "NODE_RED_HOST"
+            },
+            {
+                "name": "node_red_port",
+                "type": "env",
+                "value": "NODE_RED_PORT"
+            },
+            {
+                "name": "node_red_url",
+                "type": "env",
+                "value": "NODE_RED_URL"
+            },
+            {
+                "name": "node_red_api_root",
+                "type": "env",
+                "value": "NODE_RED_API_ROOT"
+            },
+            {
+                "name": "game_session_name",
+                "type": "env",
+                "value": "GAME_SESSION_NAME"
             }
         ]
     },
     {
-        "id": "9faf7e92.611018",
+        "id": "51372fdf.ca6e28",
+        "type": "http response",
+        "z": "214b4b40.96efc4",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 830,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "98adf578.4d58e8",
+        "type": "function",
+        "z": "214b4b40.96efc4",
+        "name": "Set Content-Type header",
+        "func": "msg.headers = {\n    \"Content-Type\":\"image/jpeg\"\n};\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 670,
+        "y": 140,
+        "wires": [
+            [
+                "51372fdf.ca6e28"
+            ]
+        ]
+    },
+    {
+        "id": "78f4583c.047a78",
+        "type": "file in",
+        "z": "214b4b40.96efc4",
+        "name": "",
+        "filename": "/tmp/example.jpg",
+        "format": "",
+        "sendError": true,
+        "x": 470,
+        "y": 140,
+        "wires": [
+            [
+                "98adf578.4d58e8"
+            ]
+        ]
+    },
+    {
+        "id": "92d6e700.bbdb08",
+        "type": "http in",
+        "z": "214b4b40.96efc4",
+        "name": "",
+        "url": "/testImage",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 280,
+        "y": 140,
+        "wires": [
+            [
+                "78f4583c.047a78"
+            ]
+        ]
+    },
+    {
+        "id": "fba56107.ca86a8",
+        "type": "comment",
+        "z": "214b4b40.96efc4",
+        "name": "HTTP API",
+        "info": "",
+        "x": 200,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "e7887229.c7da88",
+        "type": "http request",
+        "z": "214b4b40.96efc4",
+        "name": "",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "proxy": "",
+        "authType": "basic",
+        "x": 570,
+        "y": 320,
+        "wires": [
+            [
+                "57939414.0d6b54",
+                "f9e7b119.b19d48"
+            ]
+        ]
+    },
+    {
+        "id": "65909a4e.6444e4",
+        "type": "function",
+        "z": "214b4b40.96efc4",
+        "name": "setInternalRequest",
+        "func": "try {\n    const host = env.get(\"node_red_host\");\n    const port = env.get(\"node_red_port\");\n    const apiRoot = env.get(\"node_red_api_root\");\n    const url = env.get(\"node_red_url\");\n    const token = env.get(\"node_red_admin_passhash\");\n    //  console.log(\"token\", token)\n    //  msg.url = `http://${host}:${port}/${apiRoot}/start`;\n    if (!token) throw new Error(\"No token retrieved\");\n    let reqUrl;\n    //  console.log(\"payload\", msg.payload)\n    if (msg.payload.requestUrl) {\n        reqUrl = msg.payload.requestUrl;\n    } else {\n        reqUrl = \"start\";\n    }\n    let method;\n    if (msg.payload.method) {\n        method = msg.payload.method;\n    } else {\n        method = \"GET\";\n    }\n    msg.url = `${url}${apiRoot}/${reqUrl}`;\n    msg.method = method;\n    msg.headers = {};\n    msg.headers['Authorization'] = token;\n    msg.headers['Accept'] = \"application/json\";\n    msg.headers['Content-Type'] = \"application/json\";\n    msg.headers['x-access-token'] = token;\n    if (msg.payload.query) {\n        //  msg.body = msg.payload.query;\n        const query = JSON.stringify(msg.payload.query);\n        msg.payload = query;\n        console.log(\"payload\", msg.payload)\n    } else {\n        msg.payload = {token, userId: 'test'};\n    }\n    //  msg.query = {filter};\n    return msg;\n} catch(error) {\n    return error;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 350,
+        "y": 320,
+        "wires": [
+            [
+                "e7887229.c7da88",
+                "f9e7b119.b19d48"
+            ]
+        ]
+    },
+    {
+        "id": "57939414.0d6b54",
+        "type": "function",
+        "z": "214b4b40.96efc4",
+        "name": "",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 780,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f9e7b119.b19d48",
+        "type": "debug",
+        "z": "214b4b40.96efc4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 740,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "20450565.d8c26a",
         "type": "subflow",
         "name": "setState",
         "info": "",
@@ -65,7 +215,7 @@
                 "y": 100,
                 "wires": [
                     {
-                        "id": "f8b680a.57e4"
+                        "id": "8a39096f.806e08"
                     }
                 ]
             }
@@ -76,7 +226,7 @@
                 "y": 100,
                 "wires": [
                     {
-                        "id": "f8b680a.57e4",
+                        "id": "8a39096f.806e08",
                         "port": 0
                     }
                 ]
@@ -126,19 +276,800 @@
         ]
     },
     {
-        "id": "834192d3.07a2e8",
+        "id": "8a39096f.806e08",
+        "type": "function",
+        "z": "20450565.d8c26a",
+        "name": "setState",
+        "func": "try {\n    const storeType = env.get(\"NODE_RED_STORE_TYPE\") || \"memory\";\n    const deviceName = env.get(\"DEVICE_NAME\") || \"node-red-device\";\n    let device;\n    global.get(deviceName, storeType, (err, res) => {\n        if (err) throw err;\n        device = res;\n    });\n    if (!device || device === null) {\n        device = {\n            devEui : env.get(\"DEVICE_DEVEUI\"),\n            id : env.get(\"DEVICE_ID\"),\n            appKey: env.get(\"DEVICE_APPKEY\"),\n            type : env.get(\"DEVICE_TYPE\") || \"node\",\n            name : deviceName,\n            inPrefix: env.get(\"DEVICE_IN_PREFIX\") ||\"-in\",\n            outPrefix: env.get(\"DEVICE_OUT_PREFIX\") || \"-out\"\n        };    \n    } else {\n        device.devEui = env.get(\"DEVICE_DEVEUI\");\n        device.id = env.get(\"DEVICE_ID\");\n        device.appKey = env.get(\"DEVICE_APPKEY\");\n        device.type = env.get(\"DEVICE_TYPE\") || \"node\";\n        device.name = deviceName;\n        device.inPrefix = env.get(\"DEVICE_IN_PREFIX\") || \"-in\";\n        device.outPrefix = env.get(\"DEVICE_OUT_PREFIX\") || \"-out\";\n    }\n    if (device && device.devEui && device.name) {\n       global.set(device.name, device, storeType, (err) => {\n            if(err) throw err;\n        }); \n    }\n    msg.payload = device;\n    return msg;  \n} catch(error) {\n    console.log(\"setState: error\", error);\n    return error;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 340,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dec89827.18a4c",
         "type": "subflow",
-        "name": "envConfig",
+        "name": "deviceSettings",
         "info": "",
         "category": "",
-        "in": [],
-        "out": [
+        "in": [
             {
-                "x": 760,
-                "y": 200,
+                "x": 80,
+                "y": 320,
                 "wires": [
                     {
-                        "id": "346fa75f.3f35d8",
+                        "id": "251e24d7.558d94"
+                    },
+                    {
+                        "id": "ed426cb4.d8a678"
+                    },
+                    {
+                        "id": "a6670f74.fa92d8"
+                    },
+                    {
+                        "id": "edad90cf.897e48"
+                    },
+                    {
+                        "id": "3d5933d5.0112bc"
+                    },
+                    {
+                        "id": "41ca98ed.758a98"
+                    },
+                    {
+                        "id": "2df20cea.2459cc"
+                    },
+                    {
+                        "id": "c152ff11.a4e3b8"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1080,
+                "y": 300,
+                "wires": [
+                    {
+                        "id": "b1b3e489.6c9a88",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "DEVICE_NAME",
+                "type": "env",
+                "value": "DEVICE_NAME"
+            },
+            {
+                "name": "DEVICE_DEVEUI",
+                "type": "env",
+                "value": "DEVICE_DEVEUI"
+            },
+            {
+                "name": "DEVICE_ID",
+                "type": "env",
+                "value": "DEVICE_ID"
+            },
+            {
+                "name": "DEVICE_APPKEY",
+                "type": "env",
+                "value": "DEVICE_APPKEY"
+            },
+            {
+                "name": "DEVICE_TYPE",
+                "type": "env",
+                "value": "DEVICE_TYPE"
+            },
+            {
+                "name": "DEVICE_IN_PREFIX",
+                "type": "env",
+                "value": "DEVICE_IN_PREFIX"
+            },
+            {
+                "name": "DEVICE_IN_PREFIX",
+                "type": "env",
+                "value": "DEVICE_OUT_PREFIX"
+            },
+            {
+                "name": "DEVICE_IN_TOPIC",
+                "type": "env",
+                "value": "DEVICE_IN_TOPIC"
+            },
+            {
+                "name": "debug",
+                "type": "bool",
+                "value": "true"
+            }
+        ]
+    },
+    {
+        "id": "251e24d7.558d94",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceInPrefix",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_IN_PREFIX",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 440,
+        "wires": [
+            [
+                "22debeb7.76ce72"
+            ]
+        ]
+    },
+    {
+        "id": "22debeb7.76ce72",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "InPrefix ",
+        "tooltip": "mqtt subscription route :  devEui<InPrefix>, default : -in",
+        "group": "a2cd30ff.397e08",
+        "order": 6,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 500,
+        "y": 440,
+        "wires": [
+            [
+                "5a0c1f51.96187"
+            ]
+        ]
+    },
+    {
+        "id": "5a0c1f51.96187",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceInPrefix",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceInPrefix",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 440,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "b1b3e489.6c9a88",
+        "type": "function",
+        "z": "dec89827.18a4c",
+        "name": "setEnv",
+        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n    // DEVICE CONFIG\n    if (msg.payload.devEui) {\n        processEnv.DEVICE_DEVEUI = msg.payload.deviceDevEui;\n    } \n    if (msg.payload.deviceId) {\n        processEnv.DEVICE_ID = msg.payload.deviceId;\n    }\n    if (msg.payload.appKey) {\n        processEnv.DEVICE_APPKEY = msg.payload.deviceAppKey;\n    }\n    if (msg.payload.type) {\n        processEnv.DEVICE_TYPE = msg.payload.deviceType;\n    }\n    if (msg.payload.name) {\n        processEnv.DEVICE_NAME = msg.payload.deviceName;\n    }\n    // ALOES - MQTT CONFIG\n    if (msg.payload.inPrefix) {\n        processEnv.DEVICE_IN_PREFIX = msg.payload.deviceInPrefix;\n    }\n    if (msg.payload.outPrefix) {\n        processEnv.DEVICE_OUT_PREFIX = msg.payload.deviceOutPrefix;\n    }\n    if (msg.payload.inTopic) {\n        processEnv.DEVICE_IN_TOPIC = msg.payload.deviceInTopic;\n    }\n    if (env.get(\"debug\")) {\n        return [msg,msg];\n    }\n    return [msg,null];\n} catch(error){\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 950,
+        "y": 320,
+        "wires": [
+            [],
+            [
+                "3d812681.25ed42"
+            ]
+        ]
+    },
+    {
+        "id": "ed426cb4.d8a678",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceOutPrefix",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_OUT_PREFIX",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 480,
+        "wires": [
+            [
+                "f75c885e.4af918"
+            ]
+        ]
+    },
+    {
+        "id": "f75c885e.4af918",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "OutPrefix ",
+        "tooltip": "mqtt publish route :  devEui<OutPrefix>/ default : -out",
+        "group": "a2cd30ff.397e08",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 500,
+        "y": 480,
+        "wires": [
+            [
+                "ad6c87fc.2981e8"
+            ]
+        ]
+    },
+    {
+        "id": "ad6c87fc.2981e8",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceOutPrefix",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceOutPrefix",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 480,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "a6670f74.fa92d8",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceInTopic",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_IN_TOPIC",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 400,
+        "wires": [
+            [
+                "c6f25f90.dc6778"
+            ]
+        ]
+    },
+    {
+        "id": "c6f25f90.dc6778",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "InTopic",
+        "tooltip": "mqtt subscription route, default <devEui>-in/#",
+        "group": "a2cd30ff.397e08",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 500,
+        "y": 400,
+        "wires": [
+            [
+                "690e92c6.9391ec"
+            ]
+        ]
+    },
+    {
+        "id": "690e92c6.9391ec",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceInTopic",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceInTopic",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 400,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "edad90cf.897e48",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceType",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_TYPE",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 330,
+        "y": 360,
+        "wires": [
+            [
+                "29a02c44.1dcc7c"
+            ]
+        ]
+    },
+    {
+        "id": "29a02c44.1dcc7c",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "Type",
+        "tooltip": "",
+        "group": "a2cd30ff.397e08",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 490,
+        "y": 360,
+        "wires": [
+            [
+                "8355e089.4366a8"
+            ]
+        ]
+    },
+    {
+        "id": "8355e089.4366a8",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceType",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceType",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 360,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "3d5933d5.0112bc",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceAppKey",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_APPKEY",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 320,
+        "wires": [
+            [
+                "fe943be7.f5f688"
+            ]
+        ]
+    },
+    {
+        "id": "fe943be7.f5f688",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "appKey",
+        "tooltip": "",
+        "group": "a2cd30ff.397e08",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 500,
+        "y": 320,
+        "wires": [
+            [
+                "cc6b07c8.83d16"
+            ]
+        ]
+    },
+    {
+        "id": "cc6b07c8.83d16",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceAppKey",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceAppKey",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 320,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "41ca98ed.758a98",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceId",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_ID",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 320,
+        "y": 280,
+        "wires": [
+            [
+                "1b44154a.61b1bb"
+            ]
+        ]
+    },
+    {
+        "id": "1b44154a.61b1bb",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "Id",
+        "tooltip": "",
+        "group": "a2cd30ff.397e08",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 490,
+        "y": 280,
+        "wires": [
+            [
+                "5295cc2d.2436ec"
+            ]
+        ]
+    },
+    {
+        "id": "5295cc2d.2436ec",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceId",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceId",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 700,
+        "y": 280,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "2df20cea.2459cc",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceDevEui",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_DEVEUI",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 240,
+        "wires": [
+            [
+                "85c4cccb.a96728"
+            ]
+        ]
+    },
+    {
+        "id": "85c4cccb.a96728",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "devEui",
+        "tooltip": "",
+        "group": "a2cd30ff.397e08",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 490,
+        "y": 240,
+        "wires": [
+            [
+                "cd3e8361.ef2f8"
+            ]
+        ]
+    },
+    {
+        "id": "cd3e8361.ef2f8",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceDevEui",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceDevEui",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 240,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "3d812681.25ed42",
+        "type": "debug",
+        "z": "dec89827.18a4c",
+        "name": "deviceSettingsUpdate",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1020,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "c152ff11.a4e3b8",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceName",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "DEVICE_NAME",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 330,
+        "y": 200,
+        "wires": [
+            [
+                "c3593cfd.94d0d"
+            ]
+        ]
+    },
+    {
+        "id": "c3593cfd.94d0d",
+        "type": "ui_text_input",
+        "z": "dec89827.18a4c",
+        "name": "",
+        "label": "name",
+        "tooltip": "",
+        "group": "a2cd30ff.397e08",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 490,
+        "y": 200,
+        "wires": [
+            [
+                "fc98ec36.cd019"
+            ]
+        ]
+    },
+    {
+        "id": "fc98ec36.cd019",
+        "type": "change",
+        "z": "dec89827.18a4c",
+        "name": "deviceName",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.deviceName",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 200,
+        "wires": [
+            [
+                "b1b3e489.6c9a88"
+            ]
+        ]
+    },
+    {
+        "id": "a2cd30ff.397e08",
+        "type": "ui_group",
+        "z": "",
+        "name": "Device",
+        "tab": "225c85b6.231b22",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "147aae3c.e3126a",
+        "type": "subflow",
+        "name": "saveSettings",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 80,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "1f5df6f2.140799"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 840,
+                "y": 140,
+                "wires": [
+                    {
+                        "id": "e291cb2d.b199b",
                         "port": 0
                     }
                 ]
@@ -147,20 +1078,1036 @@
         "env": []
     },
     {
-        "id": "747afc9e.ba585c",
+        "id": "ba11b03a.379d5",
+        "type": "function",
+        "z": "147aae3c.e3126a",
+        "name": "saveEnvToFile",
+        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n\n      if (processEnv.NODE_ENV === \"development\") {\n        msg.filename = \"./deploy/.env_dev\";\n    } else if (processEnv.NODE_ENV === \"local\") {\n        msg.filename = \"./deploy/.env_local\";\n    } else {\n        //  msg.filename = \"./.env\";\n        msg.filename = \"./deploy/.env_dev\";\n    }\n    msg.payload = `NODE_RED_URL=${processEnv.NODE_RED_URL}\nNODE_RED_HOST=${processEnv.NODE_RED_HOST}\nNODE_RED_PORT=${processEnv.NODE_RED_PORT}\nNODE_RED_ADMIN_ROOT=${processEnv.NODE_RED_ADMIN_ROOT}\nNODE_RED_API_ROOT=${processEnv.NODE_RED_API_ROOT}\nNODE_RED_UI_PATH=${processEnv.NODE_RED_UI_PATH}\nNODE_RED_USER_DIR=${processEnv.NODE_RED_USER_DIR}\nNODE_RED_ADMIN_PASSHASH=${processEnv.NODE_RED_ADMIN_PASSHASH}\nNODE_RED_CREDENTIAL_SECRET=${processEnv.NODE_RED_CREDENTIAL_SECRET}\nNODE_RED_STORE_TYPE=${processEnv.NODE_RED_STORE_TYPE}\nALOES_MQTT_HOST=${processEnv.ALOES_MQTT_HOST}\nALOES_MQTT_PORT=${processEnv.ALOES_MQTT_PORT}\nALOES_USER_EMAIL=${processEnv.ALOES_USER_EMAIL}\nALOES_USER_PASSWORD=${processEnv.ALOES_USER_PASSWORD}\nDEVICE_DEVEUI=${processEnv.DEVICE_DEVEUI}\nDEVICE_ID=${processEnv.DEVICE_ID}\nDEVICE_APPKEY=${processEnv.DEVICE_APPKEY}\nDEVICE_TYPE=${processEnv.DEVICE_TYPE}\nDEVICE_NAME=${processEnv.DEVICE_NAME}\nDEVICE_IN_PREFIX=${processEnv.DEVICE_IN_PREFIX}\nDEVICE_OUT_PREFIX=${processEnv.DEVICE_OUT_PREFIX}\nDEVICE_IN_TOPIC=${processEnv.DEVICE_IN_TOPIC}\nGIT_REPO_SSH_URL=${processEnv.GIT_REPO_SSH_URL}`\n    return msg;\n}catch(error){\n    return error;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 440,
+        "y": 140,
+        "wires": [
+            [
+                "e291cb2d.b199b"
+            ]
+        ]
+    },
+    {
+        "id": "e291cb2d.b199b",
+        "type": "file",
+        "z": "147aae3c.e3126a",
+        "name": "",
+        "filename": "",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 630,
+        "y": 140,
+        "wires": [
+            [
+                "2b005f2.71f78a"
+            ]
+        ]
+    },
+    {
+        "id": "4bab392e.b99f",
+        "type": "ui_toast",
+        "z": "147aae3c.e3126a",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "topic": "",
+        "name": "",
+        "x": 707,
+        "y": 257,
+        "wires": []
+    },
+    {
+        "id": "2b005f2.71f78a",
+        "type": "function",
+        "z": "147aae3c.e3126a",
+        "name": "buildNotif",
+        "func": "msg.payload = \"Environment variables file updated, please restart app to validate them.\"\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 680,
+        "y": 200,
+        "wires": [
+            [
+                "4bab392e.b99f"
+            ]
+        ]
+    },
+    {
+        "id": "1f5df6f2.140799",
+        "type": "delay",
+        "z": "147aae3c.e3126a",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "5",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 217,
+        "y": 137,
+        "wires": [
+            [
+                "ba11b03a.379d5"
+            ]
+        ]
+    },
+    {
+        "id": "e8938070.da6f7",
         "type": "subflow",
-        "name": "Device-in",
+        "name": "nodeRedSettings",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "e1be046c.f167b8"
+                    },
+                    {
+                        "id": "156848e4.daad2f"
+                    },
+                    {
+                        "id": "336eab48.c5dd0c"
+                    },
+                    {
+                        "id": "bf6ed1c0.56d0a8"
+                    },
+                    {
+                        "id": "82949ce2.fdefe"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1060,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "5cdbccc0.9cfff4",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "NODE_RED_URL",
+                "type": "env",
+                "value": "NODE_RED_URL"
+            },
+            {
+                "name": "NODE_RED_HOST",
+                "type": "env",
+                "value": "NODE_RED_HOST"
+            },
+            {
+                "name": "NODE_RED_PORT",
+                "type": "env",
+                "value": "NODE_RED_PORT"
+            },
+            {
+                "name": "NODE_RED_ADMIN_ROOT",
+                "type": "env",
+                "value": "NODE_RED_ADMIN_ROOT"
+            },
+            {
+                "name": "NODE_RED_API_ROOT",
+                "type": "env",
+                "value": "NODE_RED_API_ROOT"
+            },
+            {
+                "name": "debug",
+                "type": "bool",
+                "value": "true"
+            }
+        ]
+    },
+    {
+        "id": "e1be046c.f167b8",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedHost",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "NODE_RED_HOST",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 140,
+        "wires": [
+            [
+                "603891f6.54d67"
+            ]
+        ]
+    },
+    {
+        "id": "7ba57ddf.f8a6b4",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedHost",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.nodeRedHost",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 640,
+        "y": 140,
+        "wires": [
+            [
+                "5cdbccc0.9cfff4"
+            ]
+        ]
+    },
+    {
+        "id": "603891f6.54d67",
+        "type": "ui_text_input",
+        "z": "e8938070.da6f7",
+        "name": "",
+        "label": "HTTP Host",
+        "tooltip": "",
+        "group": "f6f7c847.45d01",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 140,
+        "wires": [
+            [
+                "7ba57ddf.f8a6b4"
+            ]
+        ]
+    },
+    {
+        "id": "336eab48.c5dd0c",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedPort",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "NODE_RED_PORT",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 180,
+        "wires": [
+            [
+                "4b362c05.efd06c"
+            ]
+        ]
+    },
+    {
+        "id": "da191755.cb31f8",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedPort",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.nodeRedPort",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 180,
+        "wires": [
+            [
+                "5cdbccc0.9cfff4"
+            ]
+        ]
+    },
+    {
+        "id": "4b362c05.efd06c",
+        "type": "ui_text_input",
+        "z": "e8938070.da6f7",
+        "name": "",
+        "label": "HTTP Port",
+        "tooltip": "",
+        "group": "f6f7c847.45d01",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 180,
+        "wires": [
+            [
+                "da191755.cb31f8"
+            ]
+        ]
+    },
+    {
+        "id": "5cdbccc0.9cfff4",
+        "type": "function",
+        "z": "e8938070.da6f7",
+        "name": "setEnv",
+        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n    // NODE-RED CONFIG\n    if (msg.payload.nodeRedUrl) {\n        processEnv.NODE_RED_URL = msg.payload.nodeRedUrl;\n    }   \n    if (msg.payload.nodeRedPort) {\n        processEnv.NODE_RED_PORT = msg.payload.nodeRedPort;\n    }\n    if (msg.payload.nodeRedHost) {\n        processEnv.NODE_RED_HOST = msg.payload.nodeRedHost;\n    }    \n    if (msg.payload.nodeRedAdminRoot) {\n        processEnv.NODE_RED_ADMIN_ROOT = msg.payload.nodeRedAdminRoot;\n    } \n    if (msg.payload.nodeRedApiRoot) {\n        processEnv.NODE_RED_API_ROOT = msg.payload.nodeRedApiRoot;\n    }\n    if (env.get(\"debug\")) {\n        return [msg,msg];\n    }\n    return [msg,null];\n}catch(error){\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 910,
+        "y": 180,
+        "wires": [
+            [],
+            [
+                "4394ac64.0798ac"
+            ]
+        ]
+    },
+    {
+        "id": "156848e4.daad2f",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedUrl",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "NODE_RED_URL",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 270,
+        "y": 100,
+        "wires": [
+            [
+                "d3300b00.ab2c58"
+            ]
+        ]
+    },
+    {
+        "id": "59fa2586.d540fc",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedUrl",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.nodeRedUrl",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 630,
+        "y": 100,
+        "wires": [
+            [
+                "5cdbccc0.9cfff4"
+            ]
+        ]
+    },
+    {
+        "id": "d3300b00.ab2c58",
+        "type": "ui_text_input",
+        "z": "e8938070.da6f7",
+        "name": "",
+        "label": "HTTP URL",
+        "tooltip": "",
+        "group": "f6f7c847.45d01",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 100,
+        "wires": [
+            [
+                "59fa2586.d540fc"
+            ]
+        ]
+    },
+    {
+        "id": "bf6ed1c0.56d0a8",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedAdminRoot",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "NODE_RED_ADMIN_ROOT",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 260,
+        "y": 220,
+        "wires": [
+            [
+                "8a94d518.4e8a58"
+            ]
+        ]
+    },
+    {
+        "id": "6b735768.31521",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedAdminRoot",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.nodeRedAdminRoot",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 680,
+        "y": 220,
+        "wires": [
+            [
+                "5cdbccc0.9cfff4"
+            ]
+        ]
+    },
+    {
+        "id": "8a94d518.4e8a58",
+        "type": "ui_text_input",
+        "z": "e8938070.da6f7",
+        "name": "",
+        "label": "HTTP Admin Root",
+        "tooltip": "URL/<admin root>",
+        "group": "f6f7c847.45d01",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 470,
+        "y": 220,
+        "wires": [
+            [
+                "6b735768.31521"
+            ]
+        ]
+    },
+    {
+        "id": "72a2c971.f20dd8",
+        "type": "ui_text_input",
+        "z": "e8938070.da6f7",
+        "name": "",
+        "label": "HTTP API Root",
+        "tooltip": "URL/<api root>",
+        "group": "f6f7c847.45d01",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 460,
+        "y": 260,
+        "wires": [
+            [
+                "58d4d59a.b57884"
+            ]
+        ]
+    },
+    {
+        "id": "82949ce2.fdefe",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedApiRoot",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "NODE_RED_API_ROOT",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 250,
+        "y": 260,
+        "wires": [
+            [
+                "72a2c971.f20dd8"
+            ]
+        ]
+    },
+    {
+        "id": "58d4d59a.b57884",
+        "type": "change",
+        "z": "e8938070.da6f7",
+        "name": "nodeRedApiRoot",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.nodeRedApiRoot",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 650,
+        "y": 260,
+        "wires": [
+            [
+                "5cdbccc0.9cfff4"
+            ]
+        ]
+    },
+    {
+        "id": "4394ac64.0798ac",
+        "type": "debug",
+        "z": "e8938070.da6f7",
+        "name": "NodeRedSettingsUpdate",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1010,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "458d3692.b325",
+        "type": "subflow",
+        "name": "aloesSettings",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 360,
+                "wires": [
+                    {
+                        "id": "6c2a0727.2979c8"
+                    },
+                    {
+                        "id": "e4662451.59273"
+                    },
+                    {
+                        "id": "96519be8.65e4e"
+                    },
+                    {
+                        "id": "a943f8d6.f04308"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1040,
+                "y": 340,
+                "wires": [
+                    {
+                        "id": "b5aac682.63b9d8",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "ALOES_MQTT_HOST",
+                "type": "env",
+                "value": "ALOES_MQTT_HOST"
+            },
+            {
+                "name": "ALOES_MQTT_PORT",
+                "type": "env",
+                "value": "ALOES_MQTT_PORT"
+            },
+            {
+                "name": "ALOES_USER_EMAIL",
+                "type": "env",
+                "value": "ALOES_USER_EMAIL"
+            },
+            {
+                "name": "ALOES_USER_PASSWORD",
+                "type": "env",
+                "value": "ALOES_USER_PASSWORD"
+            },
+            {
+                "name": "debug",
+                "type": "bool",
+                "value": "true"
+            }
+        ]
+    },
+    {
+        "id": "b5aac682.63b9d8",
+        "type": "function",
+        "z": "458d3692.b325",
+        "name": "setEnv",
+        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n    // ALOES CONFIG\n    if (msg.payload.aloesMqttHost) {\n        processEnv.ALOES_MQTT_HOST = msg.payload.aloesMqttHost;\n    }    \n    if (msg.payload.aloesMqttPort) {\n        processEnv.ALOES_MQTT_PORT = msg.payload.aloesMqttPort;\n    }    \n    if (msg.payload.aloesUserEmail) {\n        processEnv.ALOES_USER_EMAIL = msg.payload.aloesUserEmail;\n    }  \n    if (msg.payload.aloesUserPassword) {\n        processEnv.ALOES_USER_PASSWORD = msg.payload.aloesUserPassword;\n    }  \n    if (env.get(\"debug\")) {\n        return [msg,msg];\n    }\n    return [msg,null];\n}catch(error){\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 890,
+        "y": 360,
+        "wires": [
+            [],
+            [
+                "2999b2d3.493c86"
+            ]
+        ]
+    },
+    {
+        "id": "e4662451.59273",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttPort",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_MQTT_PORT",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 360,
+        "wires": [
+            [
+                "b08245a9.089538"
+            ]
+        ]
+    },
+    {
+        "id": "6c2a0727.2979c8",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttHost",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_MQTT_HOST",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 320,
+        "wires": [
+            [
+                "d0222c35.b72bf8"
+            ]
+        ]
+    },
+    {
+        "id": "b08245a9.089538",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "MQTT Port",
+        "tooltip": "",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 360,
+        "wires": [
+            [
+                "eb8d1c4d.852b48"
+            ]
+        ]
+    },
+    {
+        "id": "d0222c35.b72bf8",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "MQTT Host",
+        "tooltip": "",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 320,
+        "wires": [
+            [
+                "39c39f5e.88568"
+            ]
+        ]
+    },
+    {
+        "id": "eb8d1c4d.852b48",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttPort",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesMqttPort",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "39c39f5e.88568",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttHost",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesMqttHost",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 320,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "96519be8.65e4e",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserEmail",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_USER_EMAIL",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 420,
+        "wires": [
+            [
+                "ab9a023f.b8c4e"
+            ]
+        ]
+    },
+    {
+        "id": "ab9a023f.b8c4e",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "Aloes Email",
+        "tooltip": "use the same email address as defined on aloes",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 420,
+        "wires": [
+            [
+                "f90078f8.732a7"
+            ]
+        ]
+    },
+    {
+        "id": "f90078f8.732a7",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserEmail",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesUserEmail",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 420,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "2999b2d3.493c86",
+        "type": "debug",
+        "z": "458d3692.b325",
+        "name": "aloesSettingUpdate",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1100,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "a943f8d6.f04308",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserPassword",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_USER_PASSWORD",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 300,
+        "y": 460,
+        "wires": [
+            [
+                "ead9a53e.7fbfc8"
+            ]
+        ]
+    },
+    {
+        "id": "ead9a53e.7fbfc8",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "Aloes password",
+        "tooltip": "use the same password as defined on aloes",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 460,
+        "y": 460,
+        "wires": [
+            [
+                "ad5020ae.c2b1f"
+            ]
+        ]
+    },
+    {
+        "id": "ad5020ae.c2b1f",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserPassword",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesUserPassword",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 460,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "47b4645b.9aa6f4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Aloes",
+        "tab": "225c85b6.231b22",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "225c85b6.231b22",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Settings",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": true
+    },
+    {
+        "id": "abd68453.e3ea88",
+        "type": "subflow",
+        "name": "Device-rx",
         "info": "",
         "category": "",
         "in": [],
         "out": [
             {
-                "x": 720,
-                "y": 240,
+                "x": 800,
+                "y": 200,
                 "wires": [
                     {
-                        "id": "d893b77.b4f9848",
+                        "id": "fb8041d9.1e4e2",
                         "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 800,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "fb8041d9.1e4e2",
+                        "port": 1
                     }
                 ]
             }
@@ -197,14 +2144,19 @@
                 "value": "DEVICE_IN_TOPIC"
             },
             {
-                "name": "debug",
-                "type": "bool",
-                "value": "false"
+                "name": "DEVICE_NAME",
+                "type": "env",
+                "value": "DEVICE_NAME"
             },
             {
                 "name": "NODE_RED_STORE_TYPE",
                 "type": "env",
                 "value": "NODE_RED_STORE_TYPE"
+            },
+            {
+                "name": "debug",
+                "type": "bool",
+                "value": "true"
             }
         ],
         "icon": "node-red/feed.png",
@@ -213,16 +2165,177 @@
             "y": 140,
             "wires": [
                 {
-                    "id": "7ffa8f69.e9dd5",
+                    "id": "613e4625.8efa5",
                     "port": 0
                 }
             ]
         }
     },
     {
-        "id": "d204960a.929be8",
+        "id": "2087e69c.94e7e2",
+        "type": "function",
+        "z": "abd68453.e3ea88",
+        "name": "parsePacket",
+        "func": "msg.parts = msg.topic.split(\"/\");\nif (env.get(\"debug\")) {\n    return [msg,msg];\n}\nreturn [msg,null];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 370,
+        "y": 280,
+        "wires": [
+            [
+                "fb8041d9.1e4e2"
+            ],
+            [
+                "db5be609.50091"
+            ]
+        ]
+    },
+    {
+        "id": "db5be609.50091",
+        "type": "debug",
+        "z": "abd68453.e3ea88",
+        "name": "Device-rx",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 460,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "c996b1dc.1bbbf8",
+        "type": "mqtt in",
+        "z": "abd68453.e3ea88",
+        "name": "Aloes-out",
+        "topic": "${DEVICE_IN_TOPIC}",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "73978eb.2bfc27",
+        "x": 200,
+        "y": 280,
+        "wires": [
+            [
+                "2087e69c.94e7e2"
+            ]
+        ]
+    },
+    {
+        "id": "fb8041d9.1e4e2",
+        "type": "subflow:ea7e6d6e.2ca03",
+        "z": "abd68453.e3ea88",
+        "name": "",
+        "env": [
+            {
+                "name": "device_name",
+                "type": "env",
+                "value": "DEVICE_NAME"
+            },
+            {
+                "name": "store_type",
+                "type": "env",
+                "value": "NODE_RED_STORE_TYPE"
+            },
+            {
+                "name": "debug",
+                "type": "env",
+                "value": "debug"
+            }
+        ],
+        "x": 660,
+        "y": 220,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "613e4625.8efa5",
+        "type": "status",
+        "z": "abd68453.e3ea88",
+        "name": "",
+        "scope": [
+            "c996b1dc.1bbbf8"
+        ],
+        "x": 220,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ea7e6d6e.2ca03",
         "type": "subflow",
-        "name": "Device-out",
+        "name": "updateSensor",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 260,
+                "y": 220,
+                "wires": [
+                    {
+                        "id": "3d80b9f5.d6faf6"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 600,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "3d80b9f5.d6faf6",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 600,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "3d80b9f5.d6faf6",
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "device_name",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "store_type",
+                "type": "str",
+                "value": "memory"
+            }
+        ]
+    },
+    {
+        "id": "3d80b9f5.d6faf6",
+        "type": "function",
+        "z": "ea7e6d6e.2ca03",
+        "name": "updateInstance",
+        "func": "try {\n    if (msg.parts && msg.parts !== null) {\n        const storeType = env.get(\"store_type\") || \"memory\";\n        //  console.log('updateInstance', deviceName);\n        const method = msg.parts[1];\n        const objectId = msg.parts[2];\n        const sensorId = msg.parts[3];\n        const resourceId = msg.parts[4];\n        if (!method || !objectId || !sensorId || !resourceId) {\n            return [null,new Error(\"missing params\")]\n        }\n        let sensor;\n        global.get(`sensor-${sensorId}`, storeType, (err, res) => {\n            if (err) throw err;\n            sensor = res;\n        });\n        if (!sensor || sensor === null) {\n            sensor = {};\n        }\n        if (!sensor.resources) {\n            sensor.resources = {};\n        }\n        sensor.resources[resourceId] = msg.payload;\n        sensor.type = Number(objectId);\n        sensor.resource = Number(resourceId);\n        sensor.value = msg.payload;\n        if (method === \"1\") {\n            console.log('updateInstance', sensorId, sensor.type, sensor.resource);\n            global.set(`sensor-${sensorId}`, sensor, storeType, (err) => {\n                if(err) throw err;\n            });    \n        }\n        msg.payload = sensor;\n        const msg2 = {payload: sensor.value, topic: msg.topic, parts: msg.parts}\n        return [msg, msg2];\n    }\n    throw new Error(\"No msg.parts\")\n}catch(error){\n    //  console.log('updateInstance : error', error);\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 400,
+        "y": 220,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "19d73bc1.1b5ea4",
+        "type": "subflow",
+        "name": "Device-tx",
         "info": "",
         "category": "",
         "in": [
@@ -231,7 +2344,7 @@
                 "y": 260,
                 "wires": [
                     {
-                        "id": "edb0fe1e.0180e"
+                        "id": "f4cd42a2.18e118"
                     }
                 ]
             }
@@ -254,7 +2367,7 @@
                 "value": "DEVICE_DEVEUI"
             },
             {
-                "name": "DEVICE_ID",
+                "name": "NODE_RED_STORE_TYPE",
                 "type": "env",
                 "value": "DEVICE_ID"
             },
@@ -269,14 +2382,19 @@
                 "value": "DEVICE_IN_TOPIC"
             },
             {
-                "name": "debug",
-                "type": "bool",
-                "value": "false"
+                "name": "DEVICE_NAME",
+                "type": "env",
+                "value": "DEVICE_NAME"
             },
             {
                 "name": "NODE_RED_STORE_TYPE",
                 "type": "env",
                 "value": "NODE_RED_STORE_TYPE"
+            },
+            {
+                "name": "debug",
+                "type": "bool",
+                "value": "true"
             }
         ],
         "icon": "node-red/feed.png",
@@ -285,24 +2403,106 @@
             "y": 140,
             "wires": [
                 {
-                    "id": "78a1a9d8.02885",
+                    "id": "f8de3f27.2af2d",
                     "port": 0
                 }
             ]
         }
     },
     {
-        "id": "891a3580.c2cb48",
-        "type": "subflow",
-        "name": "parsePayload",
-        "info": "",
-        "category": "",
-        "in": [],
-        "out": [],
-        "env": []
+        "id": "cf8a3295.a3a6a8",
+        "type": "mqtt out",
+        "z": "19d73bc1.1b5ea4",
+        "name": "Aloes-in",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "broker": "73978eb.2bfc27",
+        "x": 780,
+        "y": 280,
+        "wires": []
     },
     {
-        "id": "107af25b.e6bb4e",
+        "id": "f8b1e0a7.9226c",
+        "type": "debug",
+        "z": "19d73bc1.1b5ea4",
+        "name": "Device-tx",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 320,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "f4cd42a2.18e118",
+        "type": "function",
+        "z": "19d73bc1.1b5ea4",
+        "name": "topicParser",
+        "func": "try {\n    if (msg.topic && msg.topic !== null) {\n        const t = msg.topic.split(\"/\");\n        const storeType = env.get(\"NODE_RED_STORE_TYPE\") || \"memory\";\n        const deviceName = env.get(\"DEVICE_NAME\");\n        if (!deviceName) throw new Error(\"no name found\");\n        let device;\n        global.get(deviceName, storeType, (err, res)=> {\n            if (err) throw err;\n            device = res;\n        });\n        if (!device) throw new Error(\"no device found\");\n        const method = t[0];\n        const objectId = t[1];\n        const sensorId = t[2];\n        const resourceId = t[3];\n        msg.topic = `${device.devEui}${device.outPrefix}/${method}/${objectId}/${sensorId}/${resourceId}`;\n        msg.parts = msg.topic.split(\"/\");\n        if (env.get(\"debug\")){\n            return [msg,msg];\n        }\n        return [msg,null];  \n    }\n    throw new Error(\"No msg.topic\");\n} catch(error){\n    //  console.log('error', error);\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 350,
+        "y": 260,
+        "wires": [
+            [
+                "433de660.51c5a"
+            ],
+            [
+                "f8b1e0a7.9226c"
+            ]
+        ]
+    },
+    {
+        "id": "433de660.51c5a",
+        "type": "subflow:ea7e6d6e.2ca03",
+        "z": "19d73bc1.1b5ea4",
+        "name": "",
+        "env": [
+            {
+                "name": "device_name",
+                "type": "env",
+                "value": "DEVICE_NAME"
+            },
+            {
+                "name": "store_type",
+                "type": "env",
+                "value": "NODE_RED_STORE_TYPE"
+            },
+            {
+                "name": "debug",
+                "type": "env",
+                "value": "debug"
+            }
+        ],
+        "x": 580,
+        "y": 260,
+        "wires": [
+            [],
+            [
+                "cf8a3295.a3a6a8"
+            ]
+        ]
+    },
+    {
+        "id": "f8de3f27.2af2d",
+        "type": "status",
+        "z": "19d73bc1.1b5ea4",
+        "name": "",
+        "scope": [
+            "cf8a3295.a3a6a8"
+        ],
+        "x": 220,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "73978eb.2bfc27",
         "type": "mqtt-broker",
         "z": "",
         "name": "Aloes-Client",
@@ -324,244 +2524,283 @@
         "willPayload": ""
     },
     {
-        "id": "acc87b41.ff53a8",
-        "type": "ui_base",
-        "theme": {
-            "name": "theme-light",
-            "lightTheme": {
-                "default": "#0094CE",
-                "baseColor": "#528fa2",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": true,
-                "reset": false
-            },
-            "darkTheme": {
-                "default": "#097479",
-                "baseColor": "#097479",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
-                "edited": false
-            },
-            "customTheme": {
-                "name": "Untitled Theme 1",
-                "default": "#4B7930",
-                "baseColor": "#4B7930",
-                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-            },
-            "themeState": {
-                "base-color": {
-                    "default": "#0094CE",
-                    "value": "#528fa2",
-                    "edited": true
-                },
-                "page-titlebar-backgroundColor": {
-                    "value": "#528fa2",
-                    "edited": false
-                },
-                "page-backgroundColor": {
-                    "value": "#fafafa",
-                    "edited": false
-                },
-                "page-sidebar-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-textColor": {
-                    "value": "#81b1bf",
-                    "edited": false
-                },
-                "group-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "group-backgroundColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "widget-textColor": {
-                    "value": "#111111",
-                    "edited": false
-                },
-                "widget-backgroundColor": {
-                    "value": "#528fa2",
-                    "edited": false
-                },
-                "widget-borderColor": {
-                    "value": "#ffffff",
-                    "edited": false
-                },
-                "base-font": {
-                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
-                }
-            },
-            "angularTheme": {
-                "primary": "indigo",
-                "accents": "blue",
-                "warn": "red",
-                "background": "grey"
-            }
-        },
-        "site": {
-            "name": "Aloes-device",
-            "hideToolbar": "false",
-            "allowSwipe": "false",
-            "lockMenu": "false",
-            "allowTempTheme": "true",
-            "dateFormat": "DD/MM/YYYY",
-            "sizes": {
-                "sx": 48,
-                "sy": 48,
-                "gx": 6,
-                "gy": 6,
-                "cx": 6,
-                "cy": 6,
-                "px": 0,
-                "py": 0
-            }
-        }
-    },
-    {
-        "id": "92944a15.b43e3",
-        "type": "ui_group",
-        "z": "",
-        "name": "Device",
-        "tab": "7c3f862.d119478",
-        "order": 3,
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "c823ad2a.7ac8b",
-        "type": "ui_group",
-        "z": "",
-        "name": "MQTT",
-        "tab": "7c3f862.d119478",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "37eee9f8.54f026",
-        "type": "ui_group",
-        "z": "",
-        "name": "Server",
-        "tab": "7c3f862.d119478",
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "7c3f862.d119478",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Settings",
-        "icon": "dashboard",
-        "order": 1,
-        "disabled": false,
-        "hidden": true
-    },
-    {
-        "id": "7d08bae5.b5de34",
-        "type": "ui_group",
-        "z": "",
-        "name": "Device-interfaces",
-        "tab": "e6928bec.147798",
-        "order": 2,
-        "disp": false,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "e6928bec.147798",
-        "type": "ui_tab",
-        "z": "",
-        "name": "Controls",
-        "icon": "dashboard",
-        "order": 3,
-        "disabled": false,
-        "hidden": false
-    },
-    {
-        "id": "e2ff5818.655c38",
+        "id": "e02a46d4.0aab58",
         "type": "comment",
-        "z": "ae9ccaa4.46eba8",
-        "name": "Sensors presentations",
-        "info": "## Protocol\n\n+prefixedDevEui = devEui+inPrefix\n+method = 0 (\"HEAD\") | 1 (\"POST\") | 2 (\"GET\") | 3 (\"Internal\") | 4 (\"STREAM\")\n\n+prefixedDevEui/+method/+omaObjectId/+nativeSensorId/omaResourceId",
-        "x": 140,
-        "y": 380,
+        "z": "ba05b2a7.fa4168",
+        "name": "Init",
+        "info": "",
+        "x": 110,
+        "y": 60,
         "wires": []
     },
     {
-        "id": "5960aec7.de91a8",
-        "type": "inject",
-        "z": "ae9ccaa4.46eba8",
-        "name": "HEAD/3306/1/5850",
-        "topic": "node-red-device-out/0/3306/1/5850",
-        "payload": "1",
-        "payloadType": "str",
-        "repeat": "",
-        "crontab": "",
-        "once": true,
-        "onceDelay": "1",
-        "x": 220,
-        "y": 460,
-        "wires": [
-            [
-                "4553184c.4eca38"
-            ]
-        ]
-    },
-    {
-        "id": "899c060.aff04f8",
-        "type": "inject",
-        "z": "ae9ccaa4.46eba8",
-        "name": "HEAD/3306/2/5850",
-        "topic": "node-red-device-out/0/3306/2/5850",
-        "payload": "1",
-        "payloadType": "str",
-        "repeat": "",
-        "crontab": "",
-        "once": true,
-        "onceDelay": "1.1",
-        "x": 220,
-        "y": 500,
-        "wires": [
-            [
-                "4553184c.4eca38"
-            ]
-        ]
-    },
-    {
-        "id": "e3dd4f87.151068",
-        "type": "link in",
-        "z": "ae9ccaa4.46eba8",
-        "name": "device-out->",
-        "links": [
-            "410de8a8.f5785",
-            "4553184c.4eca38"
-        ],
-        "x": 775,
-        "y": 500,
-        "wires": [
-            [
-                "ca62c023.2125e8"
-            ]
-        ]
-    },
-    {
-        "id": "a623a768.5d5458",
+        "id": "4bf4e2b3.5de614",
         "type": "comment",
-        "z": "ae9ccaa4.46eba8",
-        "name": "Interface",
+        "z": "ba05b2a7.fa4168",
+        "name": "MQTT OUT",
+        "info": "## Protocol\n\n+prefixedDevEui = devEui+inPrefix\n+method = 0 (\"HEAD\") | 1 (\"POST\") | 2 (\"GET\") | 3 (\"Internal\") | 4 (\"STREAM\")\n\n+prefixedDevEui/+method/+omaObjectId/+nativeSensorId/omaResourceId",
+        "x": 790,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "f619d7ef.b91128",
+        "type": "subflow:19d73bc1.1b5ea4",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 1040,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "12a18575.55997b",
+        "type": "comment",
+        "z": "ba05b2a7.fa4168",
+        "name": "MQTT IN",
         "info": "",
         "x": 140,
-        "y": 1380,
+        "y": 560,
         "wires": []
     },
     {
-        "id": "3030c5a6.4bca8a",
+        "id": "25a57ab9.b4815e",
+        "type": "subflow:abd68453.e3ea88",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 140,
+        "y": 680,
+        "wires": [
+            [],
+            [
+                "48405f54.0db638"
+            ]
+        ]
+    },
+    {
+        "id": "cfffb53d.b8909",
+        "type": "ui_button",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "group": "f6f7c847.45d01",
+        "order": 8,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Restart app",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "{\"requestUrl\":\"restart\",\"method\":\"GET\"}",
+        "payloadType": "json",
+        "topic": "",
+        "x": 810,
+        "y": 320,
+        "wires": [
+            [
+                "f72cd5e.6b610a8"
+            ]
+        ]
+    },
+    {
+        "id": "f72cd5e.6b610a8",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "reboot-app",
+        "links": [
+            "a20d7553.175b1",
+            "6d9e549e.3a02c4"
+        ],
+        "x": 1015,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "e35c9466.3884b",
+        "type": "subflow:458d3692.b325",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 980,
+        "y": 180,
+        "wires": [
+            [
+                "3dce6fff.9423c"
+            ]
+        ]
+    },
+    {
+        "id": "def94a2b.ecf458",
+        "type": "subflow:e8938070.da6f7",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 980,
+        "y": 260,
+        "wires": [
+            [
+                "ee6ffa7.4259288"
+            ]
+        ]
+    },
+    {
+        "id": "86180b2b.91e99",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "->node-red-settings-interface",
+        "links": [
+            "6ca82e75.36a378",
+            "b3462368.a93a7",
+            "905ff57f.c9308",
+            "dd41e441.d943a8"
+        ],
+        "x": 755,
+        "y": 260,
+        "wires": [
+            [
+                "def94a2b.ecf458"
+            ]
+        ]
+    },
+    {
+        "id": "bd64ca76.7442d8",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "->aloes-client-settings-interface",
+        "links": [
+            "6ca82e75.36a378",
+            "b3462368.a93a7",
+            "905ff57f.c9308",
+            "dd41e441.d943a8"
+        ],
+        "x": 755,
+        "y": 180,
+        "wires": [
+            [
+                "e35c9466.3884b"
+            ]
+        ]
+    },
+    {
+        "id": "a49fa171.15abb8",
+        "type": "subflow:147aae3c.e3126a",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 970,
+        "y": 400,
+        "wires": [
+            [
+                "7f4e59f5.aac648"
+            ]
+        ]
+    },
+    {
+        "id": "6c103885.e56f5",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "before-save-env-vars",
+        "links": [
+            "ee6ffa7.4259288",
+            "3dce6fff.9423c",
+            "1c2adc9b.49c9e3"
+        ],
+        "x": 755,
+        "y": 400,
+        "wires": [
+            [
+                "a49fa171.15abb8"
+            ]
+        ]
+    },
+    {
+        "id": "3dce6fff.9423c",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "aloes-client-settings-interface->",
+        "links": [
+            "6c103885.e56f5"
+        ],
+        "x": 1125,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "ee6ffa7.4259288",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "node-red-settings-interface->",
+        "links": [
+            "6c103885.e56f5"
+        ],
+        "x": 1135,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "ce19ff3d.abe45",
+        "type": "subflow:dec89827.18a4c",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 960,
+        "y": 100,
+        "wires": [
+            [
+                "1c2adc9b.49c9e3"
+            ]
+        ]
+    },
+    {
+        "id": "899aa7a0.57e238",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "->device-settings-interface",
+        "links": [
+            "905ff57f.c9308",
+            "dd41e441.d943a8"
+        ],
+        "x": 755,
+        "y": 100,
+        "wires": [
+            [
+                "ce19ff3d.abe45"
+            ]
+        ]
+    },
+    {
+        "id": "1c2adc9b.49c9e3",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "device-settings-interface->",
+        "links": [
+            "6c103885.e56f5"
+        ],
+        "x": 1135,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "7f4e59f5.aac648",
+        "type": "debug",
+        "z": "ba05b2a7.fa4168",
+        "name": "saveSettings",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 1170,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "160eddc0.fcf6aa",
         "type": "inject",
-        "z": "ae9ccaa4.46eba8",
+        "z": "ba05b2a7.fa4168",
         "name": "bootApp",
         "topic": "",
         "payload": "",
@@ -570,19 +2809,18 @@
         "crontab": "",
         "once": true,
         "onceDelay": 0.1,
-        "x": 120,
-        "y": 100,
+        "x": 160,
+        "y": 120,
         "wires": [
             [
-                "b98421b4.2e1f28",
-                "d6f9639b.c4fe78"
+                "e5b6b29d.a0bcd"
             ]
         ]
     },
     {
-        "id": "b4823154.2dd388",
+        "id": "6f1e2a3c.8fdc6c",
         "type": "debug",
-        "z": "ae9ccaa4.46eba8",
+        "z": "ba05b2a7.fa4168",
         "name": "INIT",
         "active": true,
         "tosidebar": true,
@@ -590,770 +2828,178 @@
         "tostatus": false,
         "complete": "true",
         "targetType": "full",
-        "x": 490,
-        "y": 100,
+        "x": 410,
+        "y": 280,
         "wires": []
     },
     {
-        "id": "4bf3fe98.989a38",
-        "type": "comment",
-        "z": "ae9ccaa4.46eba8",
-        "name": "Init",
-        "info": "",
-        "x": 90,
-        "y": 40,
-        "wires": []
+        "id": "76b40e02.3ff128",
+        "type": "subflow:20450565.d8c26a",
+        "z": "ba05b2a7.fa4168",
+        "name": "",
+        "env": [],
+        "x": 340,
+        "y": 200,
+        "wires": [
+            [
+                "6f1e2a3c.8fdc6c",
+                "dd41e441.d943a8"
+            ]
+        ]
     },
     {
-        "id": "4553184c.4eca38",
+        "id": "e5b6b29d.a0bcd",
         "type": "link out",
-        "z": "ae9ccaa4.46eba8",
-        "name": "audio-player-out-presentations",
+        "z": "ba05b2a7.fa4168",
+        "name": "boot-app",
         "links": [
-            "e3dd4f87.151068"
+            "6dd99d1d.4d515c",
+            "6ae1e1f7.03929"
         ],
-        "x": 555,
-        "y": 520,
+        "x": 295,
+        "y": 120,
         "wires": []
     },
     {
-        "id": "53fb9f78.9d96d",
+        "id": "6dd99d1d.4d515c",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "before-state-init",
+        "links": [
+            "e5b6b29d.a0bcd"
+        ],
+        "x": 215,
+        "y": 200,
+        "wires": [
+            [
+                "76b40e02.3ff128"
+            ]
+        ]
+    },
+    {
+        "id": "dd41e441.d943a8",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "after-state-init",
+        "links": [
+            "2f687c43.036514",
+            "86180b2b.91e99",
+            "899aa7a0.57e238",
+            "bd64ca76.7442d8"
+        ],
+        "x": 475,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "2a78a6c8.03fba2",
+        "type": "subflow:214b4b40.96efc4",
+        "z": "ba05b2a7.fa4168",
+        "name": "nodeRedServer",
+        "env": [],
+        "x": 280,
+        "y": 480,
+        "wires": [
+            [
+                "aa9d6158.6f4a1"
+            ]
+        ]
+    },
+    {
+        "id": "6d9e549e.3a02c4",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "->node-red-http-in",
+        "links": [
+            "b6a4e8ff.1b1848",
+            "cb3f010.077a6",
+            "bd30fa14.040b68",
+            "f72cd5e.6b610a8"
+        ],
+        "x": 135,
+        "y": 480,
+        "wires": [
+            [
+                "2a78a6c8.03fba2"
+            ]
+        ]
+    },
+    {
+        "id": "aa9d6158.6f4a1",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "node-red-http-in->",
+        "links": [],
+        "x": 415,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "2d7e931f.31763c",
         "type": "comment",
-        "z": "ae9ccaa4.46eba8",
-        "name": "MQTT OUT",
-        "info": "## Protocol\n\n+prefixedDevEui = devEui+inPrefix\n+method = 0 (\"HEAD\") | 1 (\"POST\") | 2 (\"GET\") | 3 (\"Internal\") | 4 (\"STREAM\")\n\n+prefixedDevEui/+method/+omaObjectId/+nativeSensorId/omaResourceId",
-        "x": 770,
+        "z": "ba05b2a7.fa4168",
+        "name": "HTTP IN",
+        "info": "",
+        "x": 160,
         "y": 380,
         "wires": []
     },
     {
-        "id": "a51a8dc7.b1584",
-        "type": "function",
-        "z": "aed39a0a.3b8fc8",
-        "name": "updateInstance",
-        "func": "try {\n    if (msg.parts && msg.parts !== null) {\n        const storeType = env.get(\"store_type\") || \"memory\";\n        //  console.log('updateInstance', deviceName);\n        const method = msg.parts[1];\n        const objectId = msg.parts[2];\n        const sensorId = msg.parts[3];\n        const resourceId = msg.parts[4];\n        let sensor = global.get(`sensor-${sensorId}`, storeType);\n        if (!method || !objectId || !sensorId || !resourceId) {\n            return [null,new Error(\"missing params\")]\n        }\n        if (!sensor || sensor === null) {\n            sensor = {};\n        }\n        if (!sensor.resources) {\n            sensor.resources = {};\n        }\n        sensor.resources[resourceId] = msg.payload;\n        sensor.type = Number(objectId);\n        sensor.resource = Number(resourceId);\n        sensor.value = msg.payload;\n        global.set(`sensor-${sensorId}`, sensor, storeType, (err) => {\n            if(err) throw err;\n        });\n        msg.payload = sensor;\n        if (env.get(\"debug\")) {\n            return [msg, msg];\n        }\n        return [msg, null];\n    }\n    throw new Error(\"No msg.parts\")\n}catch(error){\n    //  console.log('updateInstance : error', error);\n    return error;\n}\n",
-        "outputs": 2,
-        "noerr": 0,
-        "x": 400,
-        "y": 220,
-        "wires": [
-            [],
-            [
-                "b440eb85.1e783"
-            ]
-        ]
-    },
-    {
-        "id": "b440eb85.1e783",
-        "type": "debug",
-        "z": "aed39a0a.3b8fc8",
-        "name": "sensorUpdated",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "x": 460,
-        "y": 280,
-        "wires": []
-    },
-    {
-        "id": "700ef8f1.3af46",
-        "type": "debug",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 970,
-        "y": 100,
-        "wires": []
-    },
-    {
-        "id": "ec1b034e.993fd8",
-        "type": "function",
-        "z": "ae9ccaa4.46eba8",
-        "name": "setEnv",
-        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n    // DEVICE CONFIG\n    if (msg.payload.devEui) {\n        processEnv.DEVICE_DEVEUI = msg.payload.devEui;\n    } \n    if (msg.payload.deviceId) {\n        processEnv.DEVICE_ID = msg.payload.deviceId;\n    }\n    if (msg.payload.appKey) {\n        processEnv.DEVICE_APPKEY = msg.payload.appKey;\n    }\n    if (msg.payload.type) {\n        processEnv.DEVICE_TYPE = msg.payload.type;\n    }\n    if (msg.payload.name) {\n        processEnv.DEVICE_NAME = msg.payload.name;\n    }\n    // ALOES - MQTT CONFIG\n    if (msg.payload.inPrefix) {\n        processEnv.DEVICE_IN_PREFIX = msg.payload.inPrefix;\n    }\n    if (msg.payload.outPrefix) {\n        processEnv.DEVICE_OUT_PREFIX = msg.payload.outPrefix;\n    }\n    if (msg.payload.inTopic) {\n        processEnv.DEVICE_IN_TOPIC = msg.payload.inTopic;\n    }\n    if (msg.payload.aloesMqttHost) {\n        processEnv.ALOES_MQTT_HOST = msg.payload.aloesMqttHost;\n    }\n    if (msg.payload.aloesMqttPort) {\n        processEnv.ALOES_MQTT_PORT = msg.payload.aloesMqttPort;\n    }\n    \n    // CREDENTIALS FOR ALOES - NODE-RED\n    if (msg.payload.aloesUserEmail) {\n        processEnv.ALOES_USER_EMAIL = msg.payload.aloesUserEmail;\n    }\n    if (msg.payload.aloesUserPassword) {\n        processEnv.ALOES_USER_PASSWORD = msg.payload.aloesUserPassword;\n    }\n    \n    // NODE-RED CONFIG\n    if (msg.payload.nodeRedUrl) {\n        processEnv.NODE_RED_URL = msg.payload.nodeRedUrl;\n    }   \n    if (msg.payload.nodeRedPort) {\n        processEnv.NODE_RED_PORT = msg.payload.nodeRedPort;\n    }\n    if (msg.payload.nodeRedHost) {\n        processEnv.NODE_RED_HOST = msg.payload.nodeRedHost;\n    }    \n    if (msg.payload.nodeRedAdminRoot) {\n        processEnv.NODE_RED_ADMIN_ROOT = msg.payload.nodeRedAdminRoot;\n    } \n    if (msg.payload.nodeRedApiRoot) {\n        processEnv.NODE_RED_API_ROOT = msg.payload.nodeRedApiRoot;\n    }  \n    if (processEnv.NODE_ENV === \"development\") {\n        msg.filename = \"./deploy/.env_dev\";\n    } else if (processEnv.NODE_ENV === \"local\") {\n        msg.filename = \"./deploy/.env_local\";\n    } else {\n        //  msg.filename = \"./.env\";\n        msg.filename = \"./deploy/.env_dev\";\n    }\n    msg.payload = `NODE_RED_URL=${env.get(\"NODE_RED_URL\")}\nNODE_RED_HOST=${env.get(\"NODE_RED_HOST\")}\nNODE_RED_PORT=${env.get(\"NODE_RED_PORT\")}\nNODE_RED_ADMIN_ROOT=${env.get(\"NODE_RED_ADMIN_ROOT\")}\nNODE_RED_API_ROOT=${env.get(\"NODE_RED_API_ROOT\")}\nNODE_RED_UI_PATH=${env.get(\"NODE_RED_UI_PATH\")}\nNODE_RED_USER_DIR=${env.get(\"NODE_RED_USER_DIR\")}\nNODE_RED_STORE_TYPE=${env.get(\"NODE_RED_STORE_TYPE\")}\nALOES_MQTT_HOST=${env.get(\"ALOES_MQTT_HOST\")}\nALOES_MQTT_PORT=${env.get(\"ALOES_MQTT_PORT\")}\nALOES_USER_EMAIL=${env.get(\"ALOES_USER_EMAIL\")}\nALOES_USER_PASSWORD=${env.get(\"ALOES_USER_PASSWORD\")}\nDEVICE_DEVEUI=${env.get(\"DEVICE_DEVEUI\")}\nDEVICE_ID=${env.get(\"DEVICE_ID\")}\nDEVICE_APPKEY=${env.get(\"DEVICE_APPKEY\")}\nDEVICE_TYPE=${env.get(\"DEVICE_TYPE\")}\nDEVICE_NAME=${env.get(\"DEVICE_NAME\")}\nDEVICE_IN_PREFIX=${env.get(\"DEVICE_IN_PREFIX\")}\nDEVICE_OUT_PREFIX=${env.get(\"DEVICE_OUT_PREFIX\")}\nDEVICE_IN_TOPIC=${env.get(\"DEVICE_IN_TOPIC\")}\nGIT_REPO_SSH_URL=${env.get(\"GIT_REPO_SSH_URL\")}`;\n    console.log(\"env\", msg.payload)\n    return msg;\n}catch(error){\n    return error;\n}\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 750,
-        "y": 220,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "f8b680a.57e4",
-        "type": "function",
-        "z": "9faf7e92.611018",
-        "name": "setState",
-        "func": "try {\n    const storeType = env.get(\"NODE_RED_STORE_TYPE\") || \"memory\";\n    const deviceName = env.get(\"DEVICE_NAME\") || \"node-red-device\";\n    let device; \n    global.get(deviceName, storeType, (err, res) => {\n        if (err) throw err;\n        device = res;\n    });\n    if (!device || device === null) {\n        device = {\n            devEui : env.get(\"DEVICE_DEVEUI\"),\n            id : env.get(\"DEVICE_ID\"),\n            appKey: env.get(\"DEVICE_APPKEY\"),\n            type : env.get(\"DEVICE_TYPE\") || \"node\",\n            name : deviceName,\n            inPrefix: env.get(\"DEVICE_IN_PREFIX\") ||\"-in\",\n            outPrefix: env.get(\"DEVICE_OUT_PREFIX\") || \"-out\"\n        };    \n    } else {\n        device.devEui = env.get(\"DEVICE_DEVEUI\");\n        device.id = env.get(\"DEVICE_ID\");\n        device.appKey = env.get(\"DEVICE_APPKEY\");\n        device.type = env.get(\"DEVICE_TYPE\") || \"node\";\n        device.name = deviceName;\n        device.inPrefix = env.get(\"DEVICE_IN_PREFIX\") || \"-in\";\n        device.outPrefix = env.get(\"DEVICE_OUT_PREFIX\") || \"-out\";\n    }\n    if (device && device.devEui && device.name) {\n       global.set(device.name, device, storeType, (err) => {\n            if(err) throw err;\n        }); \n    }\n    msg.payload = device;\n    return msg;  \n} catch(error) {\n    console.log(\"setState: error\", error);\n    return error;\n}",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 340,
-        "y": 100,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "d6f9639b.c4fe78",
-        "type": "subflow:9faf7e92.611018",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "env": [],
-        "x": 300,
-        "y": 100,
-        "wires": [
-            [
-                "b4823154.2dd388",
-                "76367748.cac45"
-            ]
-        ]
-    },
-    {
-        "id": "b98421b4.2e1f28",
-        "type": "file in",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "filename": "./.env",
-        "format": "utf8",
-        "chunk": false,
-        "sendError": false,
-        "encoding": "none",
-        "x": 290,
-        "y": 200,
-        "wires": [
-            [
-                "ec6dbb55.e6235"
-            ]
-        ]
-    },
-    {
-        "id": "ec6dbb55.e6235",
-        "type": "debug",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "x": 490,
-        "y": 200,
-        "wires": []
-    },
-    {
-        "id": "fd2c66e8.f05e58",
-        "type": "function",
-        "z": "834192d3.07a2e8",
-        "name": "setEnv",
-        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n    // DEVICE CONFIG\n    if (msg.payload.devEui) {\n        processEnv.DEVICE_DEVEUI = msg.payload.devEui;\n    } \n    if (msg.payload.deviceId) {\n        processEnv.DEVICE_ID = msg.payload.deviceId;\n    }\n    if (msg.payload.appKey) {\n        processEnv.DEVICE_APPKEY = msg.payload.appKey;\n    }\n    if (msg.payload.deviceType) {\n        processEnv.DEVICE_TYPE = msg.payload.deviceType;\n    }\n    if (msg.payload.deviceName) {\n        processEnv.DEVICE_NAME = msg.payload.deviceName;\n    }\n    // ALOES - MQTT CONFIG\n    if (msg.payload.inPrefix) {\n        processEnv.DEVICE_IN_PREFIX = msg.payload.inPrefix;\n    }\n    if (msg.payload.outPrefix) {\n        processEnv.DEVICE_OUT_PREFIX = msg.payload.outPrefix;\n    }\n    if (msg.payload.inTopic) {\n        processEnv.DEVICE_IN_TOPIC = msg.payload.inTopic;\n    }\n    if (msg.payload.aloesMqttHost) {\n        processEnv.ALOES_MQTT_HOST = msg.payload.aloesMqttHost;\n    }\n    if (msg.payload.aloesMqttPort) {\n        processEnv.ALOES_MQTT_PORT = msg.payload.aloesMqttPort;\n    }\n    \n    // CREDENTIALS FOR ALOES - NODE-RED\n    if (msg.payload.aloesUserEmail) {\n        processEnv.ALOES_USER_EMAIL = msg.payload.aloesUserEmail;\n    }\n    if (msg.payload.aloesUserPassword) {\n        processEnv.ALOES_USER_PASSWORD = msg.payload.aloesUserPassword;\n    }\n    \n    // NODE-RED CONFIG\n    if (msg.payload.nodeRedUrl) {\n        processEnv.NODE_RED_URL = msg.payload.nodeRedUrl;\n    }   \n    if (msg.payload.nodeRedPort) {\n        processEnv.NODE_RED_PORT = msg.payload.nodeRedPort;\n    }\n    if (msg.payload.nodeRedHost) {\n        processEnv.NODE_RED_HOST = msg.payload.nodeRedHost;\n    }    \n    if (msg.payload.nodeRedAdminRoot) {\n        processEnv.NODE_RED_ADMIN_ROOT = msg.payload.nodeRedAdminRoot;\n    } \n    if (msg.payload.nodeRedApiRoot) {\n        processEnv.NODE_RED_API_ROOT = msg.payload.nodeRedApiRoot;\n    }  \n    if (processEnv.NODE_ENV === \"development\") {\n        msg.filename = \"./deploy/.env_dev\";\n    } else if (processEnv.NODE_ENV === \"local\") {\n        msg.filename = \"./deploy/.env_local\";\n    } else {\n        //  msg.filename = \"./.env\";\n        msg.filename = \"./deploy/.env_dev\";\n    }\n    msg.payload = `NODE_RED_URL=${processEnv.NODE_RED_URL}\nNODE_RED_HOST=${processEnv.NODE_RED_HOST}\nNODE_RED_PORT=${processEnv.NODE_RED_PORT}\nNODE_RED_ADMIN_ROOT=${processEnv.NODE_RED_ADMIN_ROOT}\nNODE_RED_API_ROOT=${processEnv.NODE_RED_API_ROOT}\nNODE_RED_UI_PATH=${processEnv.NODE_RED_UI_PATH}\nNODE_RED_USER_DIR=${processEnvNODE_RED_USER_DIR}\nNODE_RED_STORE_TYPE=${processEnv.NODE_RED_STORE_TYPE}\nALOES_MQTT_HOST=${processEnv.ALOES_MQTT_HOST}\nALOES_MQTT_PORT=${processEnv.ALOES_MQTT_PORT}\nALOES_USER_EMAIL=${processEnv.ALOES_USER_EMAIL}\nALOES_USER_PASSWORD=${processEnv.ALOES_USER_PASSWORD}\nDEVICE_DEVEUI=${processEnv.DEVICE_DEVEUI}\nDEVICE_ID=${processEnv.DEVICE_ID}\nDEVICE_APPKEY=${processEnv.DEVICE_APPKEY}\nDEVICE_TYPE=${processEnv.DEVICE_TYPE}\nDEVICE_NAME=${processEnv.DEVICE_NAME}\nDEVICE_IN_PREFIX=${processEnv.DEVICE_IN_PREFIX}\nDEVICE_OUT_PREFIX=${processEnv.DEVICE_OUT_PREFIX}\nDEVICE_IN_TOPIC=${processEnv.DEVICE_IN_TOPIC}\nGIT_REPO_SSH_URL=${processEnv.GIT_REPO_SSH_URL}`;\n    console.log(\"env\", msg.payload)\n    return msg;\n}catch(error){\n    return error;\n}\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 450,
-        "y": 200,
-        "wires": [
-            [
-                "346fa75f.3f35d8"
-            ]
-        ]
-    },
-    {
-        "id": "346fa75f.3f35d8",
-        "type": "file",
-        "z": "834192d3.07a2e8",
-        "name": "env file",
-        "filename": "",
-        "appendNewline": false,
-        "createDir": false,
-        "overwriteFile": "true",
-        "encoding": "none",
-        "x": 600,
-        "y": 200,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "cc4bb07f.71249",
-        "type": "ui_form",
-        "z": "834192d3.07a2e8",
-        "name": "",
-        "label": "Instance config :",
-        "group": "92944a15.b43e3",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "options": [
-            {
-                "label": "devEui",
-                "value": "devEui",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "deviceId",
-                "value": "deviceId",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "name",
-                "value": "deviceName",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "type",
-                "value": "deviceType",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "appKey",
-                "value": "appKey",
-                "type": "text",
-                "required": false
-            }
-        ],
-        "formValue": {
-            "devEui": "",
-            "deviceId": "",
-            "deviceName": "",
-            "deviceType": "",
-            "appKey": ""
-        },
-        "payload": "",
-        "submit": "submit",
-        "cancel": "cancel",
-        "topic": "",
-        "x": 280,
-        "y": 140,
-        "wires": [
-            [
-                "fd2c66e8.f05e58"
-            ]
-        ]
-    },
-    {
-        "id": "491707e9.cb593",
-        "type": "ui_form",
-        "z": "834192d3.07a2e8",
-        "name": "",
-        "label": "Aloes config :",
-        "group": "c823ad2a.7ac8b",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "options": [
-            {
-                "label": "host",
-                "value": "aloesMqttHost",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "port",
-                "value": "aloesMqttPort",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "inPrefix",
-                "value": "inPrefix",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "outPrefix",
-                "value": "outPrefix",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "inTopic",
-                "value": "inTopic",
-                "type": "text",
-                "required": false
-            }
-        ],
-        "formValue": {
-            "aloesMqttHost": "",
-            "aloesMqttPort": "",
-            "inPrefix": "",
-            "outPrefix": "",
-            "inTopic": ""
-        },
-        "payload": "",
-        "submit": "submit",
-        "cancel": "cancel",
-        "topic": "",
-        "x": 270,
-        "y": 200,
-        "wires": [
-            [
-                "fd2c66e8.f05e58"
-            ]
-        ]
-    },
-    {
-        "id": "bb3a365a.05d0b8",
-        "type": "ui_form",
-        "z": "834192d3.07a2e8",
-        "name": "",
-        "label": "Node-red config :",
-        "group": "37eee9f8.54f026",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "options": [
-            {
-                "label": "Admin root",
-                "value": "nodeRedAdminRoot",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "httpRoot",
-                "value": "nodeRedApiRoot",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "host",
-                "value": "nodeRedHost",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "port",
-                "value": "nodeRedPort",
-                "type": "text",
-                "required": false
-            },
-            {
-                "label": "URL",
-                "value": "nodeRedUrl",
-                "type": "text",
-                "required": false
-            }
-        ],
-        "formValue": {
-            "nodeRedAdminRoot": "",
-            "nodeRedApiRoot": "",
-            "nodeRedHost": "",
-            "nodeRedPort": "",
-            "nodeRedUrl": ""
-        },
-        "payload": "",
-        "submit": "submit",
-        "cancel": "cancel",
-        "topic": "",
-        "x": 280,
-        "y": 260,
-        "wires": [
-            [
-                "fd2c66e8.f05e58"
-            ]
-        ]
-    },
-    {
-        "id": "460ac585.a9ddec",
-        "type": "subflow:834192d3.07a2e8",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "env": [],
-        "x": 780,
-        "y": 100,
-        "wires": [
-            [
-                "700ef8f1.3af46"
-            ]
-        ]
-    },
-    {
-        "id": "c3457eb9.a747d8",
-        "type": "function",
-        "z": "747afc9e.ba585c",
-        "name": "topicSplit",
-        "func": "msg.parts = msg.topic.split(\"/\");\nif (env.get(\"debug\")) {\n    return [msg,msg];\n}\nreturn [msg,null];",
-        "outputs": 2,
-        "noerr": 0,
-        "x": 360,
-        "y": 280,
-        "wires": [
-            [
-                "d893b77.b4f9848"
-            ],
-            [
-                "c8771ec4.e94a4"
-            ]
-        ]
-    },
-    {
-        "id": "c8771ec4.e94a4",
-        "type": "debug",
-        "z": "747afc9e.ba585c",
-        "name": "Device-rx",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 460,
-        "y": 360,
-        "wires": []
-    },
-    {
-        "id": "366d919e.1a7ade",
-        "type": "mqtt in",
-        "z": "747afc9e.ba585c",
-        "name": "Aloes-out",
-        "topic": "${DEVICE_IN_TOPIC}",
-        "qos": "0",
-        "datatype": "auto",
-        "broker": "107af25b.e6bb4e",
-        "x": 200,
-        "y": 280,
-        "wires": [
-            [
-                "c3457eb9.a747d8"
-            ]
-        ]
-    },
-    {
-        "id": "d893b77.b4f9848",
-        "type": "subflow:aed39a0a.3b8fc8",
-        "z": "747afc9e.ba585c",
-        "name": "",
-        "env": [
-            {
-                "name": "device_name",
-                "type": "env",
-                "value": "DEVICE_NAME"
-            },
-            {
-                "name": "store_type",
-                "type": "env",
-                "value": "NODE_RED_STORE_TYPE"
-            }
-        ],
-        "x": 540,
-        "y": 240,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "7ffa8f69.e9dd5",
-        "type": "status",
-        "z": "747afc9e.ba585c",
-        "name": "",
-        "scope": [
-            "366d919e.1a7ade"
-        ],
-        "x": 220,
-        "y": 140,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "20719b9e.b0c8b4",
-        "type": "mqtt out",
-        "z": "d204960a.929be8",
-        "name": "Aloes-in",
-        "topic": "",
-        "qos": "",
-        "retain": "",
-        "broker": "107af25b.e6bb4e",
-        "x": 580,
-        "y": 220,
-        "wires": []
-    },
-    {
-        "id": "23254726.d55d08",
-        "type": "debug",
-        "z": "d204960a.929be8",
-        "name": "Device-tx",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 320,
-        "y": 360,
-        "wires": []
-    },
-    {
-        "id": "edb0fe1e.0180e",
-        "type": "function",
-        "z": "d204960a.929be8",
-        "name": "topicParser",
-        "func": "try {\n    if (msg.topic && msg.topic !== null) {\n        const t = msg.topic.split(\"/\");\n        //  const dNameParts = t[0].split(\"-\");\n        //  const l = dNameParts.length;\n        //  const prefix = `-${dNameParts.slice(l-1,l)}`;\n        const storeType = env.get(\"NODE_RED_STORE_TYPE\") || \"memory\";\n        const deviceName = env.get(\"DEVICE_NAME\");\n        console.log('deviceName', deviceName);\n        if (!deviceName) throw new Error(\"no name found\");\n        const device = global.get(deviceName, storeType);\n        if (!device) throw new Error(\"no device found\");\n        //  t[0] = `${device.devEui}${device.outPrefix}`;\n        //  msg.topic = t.join(\"/\");\n        const method = t[0];\n        const objectId = t[1];\n        const sensorId = t[2];\n        const resourceId = t[3];\n        msg.topic = `${device.devEui}${device.outPrefix}/${method}/${objectId}/${sensorId}/${resourceId}`;\n        msg.parts = t;\n        //  console.log('topic', msg.topic);\n        if (env.get(\"debug\")){\n            return [msg,msg];\n        }\n        return [msg,null];  \n    }\n    throw new Error(\"No msg.topic\")\n}catch(error){\n    //  console.log('error', error);\n    return error;\n}\n",
-        "outputs": 2,
-        "noerr": 0,
-        "x": 350,
-        "y": 260,
-        "wires": [
-            [
-                "20719b9e.b0c8b4",
-                "dada4a19.6c7998"
-            ],
-            [
-                "23254726.d55d08"
-            ]
-        ]
-    },
-    {
-        "id": "dada4a19.6c7998",
-        "type": "subflow:aed39a0a.3b8fc8",
-        "z": "d204960a.929be8",
-        "name": "",
-        "env": [
-            {
-                "name": "debug",
-                "type": "bool",
-                "value": "false"
-            },
-            {
-                "name": "device_name",
-                "type": "env",
-                "value": "DEVICE_NAME"
-            },
-            {
-                "name": "store_type",
-                "type": "env",
-                "value": "NODE_RED_STORE_TYPE"
-            }
-        ],
-        "x": 580,
-        "y": 280,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "78a1a9d8.02885",
-        "type": "status",
-        "z": "d204960a.929be8",
-        "name": "",
-        "scope": [
-            "20719b9e.b0c8b4"
-        ],
-        "x": 220,
-        "y": 140,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "ca62c023.2125e8",
-        "type": "subflow:d204960a.929be8",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "env": [
-            {
-                "name": "debug",
-                "type": "bool",
-                "value": "true"
-            }
-        ],
-        "x": 940,
-        "y": 500,
-        "wires": []
-    },
-    {
-        "id": "e2e2de14.fce488",
+        "id": "c1068db9.df1d1",
         "type": "ui_template",
-        "z": "ae9ccaa4.46eba8",
-        "group": "7d08bae5.b5de34",
-        "name": "device-status-icon",
+        "z": "ba05b2a7.fa4168",
+        "group": "6475a0bc.511ec8",
+        "name": "device-status",
         "order": 1,
-        "width": "1",
+        "width": "12",
         "height": "1",
-        "format": "<svg width=\"100%\" height=\"100%\" id=\"{{'device-status-'+ $id}}\">\n    <circle id=\"{{'status-icon-'+$id}}\" x=\"0\" y=\"0\" cx=\"20\" cy=\"20\" r=\"15\" fill=\"{{msg.status.fill || 'red'}}\" ></circle>\n</svg>",
+        "format": "<!DOCTYPE html>\n<svg viewBox=\"0 0 250 40\" id=\"{{'devices-status-'+ $id}}\">\n    <text x=\"0\" y=\"25\" style=\"{{'font-weight:700'}}\" >{{$deviceName}}</text>\n    <circle id=\"{{'devices-status-icon-'+$id}}\" x=\"0\" y=\"0\" cx=\"250\" cy=\"20\" r=\"15\" fill=\"{{$statusColor}}\" ></circle>\n</svg>\n<script>\n(function(scope) {\n  scope.$watch('msg', (msg) => {\n    try{\n        scope.$statusText = \"Waiting\";\n        scope.$deviceName = \"\";\n        scope.$statusColor = \"#ff4500\";\n        if (msg && msg.device) {\n            scope.$deviceName = msg.device.name;\n            if (msg && (msg.device.status === true || msg.device.status === \"true\")) {\n                scope.$statusColor = \"#baff00\";\n                scope.$statusText = \"Ready\";\n            }\n        }\n        return msg;\n    } catch(error){\n        return error;\n    }\n  });\n})(scope);\n</script>",
         "storeOutMessages": true,
         "fwdInMessages": true,
         "templateScope": "local",
-        "x": 450,
-        "y": 1460,
+        "x": 560,
+        "y": 620,
         "wires": [
             []
         ]
     },
     {
-        "id": "18ef1722.856e09",
+        "id": "84fb4aa6.8955f8",
         "type": "status",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
+        "z": "ba05b2a7.fa4168",
+        "name": "device-rx status",
         "scope": [
-            "184ab8ff.3219df"
+            "25a57ab9.b4815e",
+            "f619d7ef.b91128"
         ],
-        "x": 140,
-        "y": 1460,
+        "x": 160,
+        "y": 620,
         "wires": [
             [
-                "e2e2de14.fce488",
-                "3f561dbc.296f62"
+                "e2bea25a.85da18"
             ]
         ]
     },
     {
-        "id": "76367748.cac45",
-        "type": "ui_text",
-        "z": "ae9ccaa4.46eba8",
-        "group": "7d08bae5.b5de34",
-        "order": 1,
-        "width": "5",
-        "height": "1",
-        "name": "deviceName",
-        "label": "",
-        "format": "{{msg.payload.name}}",
-        "layout": "row-left",
-        "x": 510,
-        "y": 140,
-        "wires": []
-    },
-    {
-        "id": "3f561dbc.296f62",
-        "type": "debug",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
+        "id": "e2bea25a.85da18",
+        "type": "function",
+        "z": "ba05b2a7.fa4168",
+        "name": "parseStatus",
+        "func": "try {\n    let status = false;\n    msg.device = {};\n    msg.device.name = env.get(\"DEVICE_NAME\");\n    if (msg.status && msg.status.text && msg.status.text.startsWith(\"node-red:common.status.\")) {\n        if (msg.status.text.endsWith(\"connected\")) {\n            msg.device.status = true;\n        } else if (msg.status.text.endsWith(\"disconnected\")) {\n            msg.device.status = false;\n        }\n    }\n    return msg;\n} catch(error) {\n    return error;\n}",
+        "outputs": 1,
+        "noerr": 0,
         "x": 370,
-        "y": 1400,
-        "wires": []
-    },
-    {
-        "id": "bc74c052.b2b2c8",
-        "type": "ui_switch",
-        "z": "ae9ccaa4.46eba8",
-        "name": "POST/3306/1/5850",
-        "label": "switch",
-        "tooltip": "",
-        "group": "7d08bae5.b5de34",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "passthru": false,
-        "decouple": "true",
-        "topic": "1/3306/1/5850",
-        "style": "",
-        "onvalue": "true",
-        "onvalueType": "bool",
-        "onicon": "",
-        "oncolor": "",
-        "offvalue": "false",
-        "offvalueType": "bool",
-        "officon": "",
-        "offcolor": "",
-        "x": 480,
-        "y": 1620,
+        "y": 620,
         "wires": [
             [
-                "410de8a8.f5785"
+                "c1068db9.df1d1"
             ]
         ]
     },
     {
-        "id": "f408cca6.5d2ec8",
-        "type": "ui_slider",
-        "z": "ae9ccaa4.46eba8",
-        "name": "POST/3306/1/5851",
-        "label": "slider",
-        "tooltip": "update 3306/1/5851",
-        "group": "7d08bae5.b5de34",
-        "order": 2,
-        "width": 0,
-        "height": 0,
-        "passthru": false,
-        "outs": "end",
-        "topic": "1/3306/1/5851",
-        "min": 0,
-        "max": "100",
-        "step": 1,
-        "x": 470,
-        "y": 1680,
-        "wires": [
-            [
-                "410de8a8.f5785"
-            ]
-        ]
-    },
-    {
-        "id": "76587dda.844ecc",
-        "type": "link in",
-        "z": "ae9ccaa4.46eba8",
-        "name": "SWITCH/1/3306/1/5850",
-        "links": [
-            "290014a9.88dcc4",
-            "9e6b9922.c91d9"
-        ],
-        "x": 255,
-        "y": 1620,
-        "wires": [
-            [
-                "bc74c052.b2b2c8"
-            ]
-        ]
-    },
-    {
-        "id": "410de8a8.f5785",
-        "type": "link out",
-        "z": "ae9ccaa4.46eba8",
-        "name": "interfaces->",
-        "links": [
-            "e3dd4f87.151068"
-        ],
-        "x": 755,
-        "y": 1660,
-        "wires": []
-    },
-    {
-        "id": "fc4c2500.9728c",
-        "type": "link in",
-        "z": "ae9ccaa4.46eba8",
-        "name": "SLIDER/1/3306/1/5851",
-        "links": [
-            "ade007f6.03d3f8",
-            "386d124c.1324ae"
-        ],
-        "x": 255,
-        "y": 1680,
-        "wires": [
-            [
-                "f408cca6.5d2ec8"
-            ]
-        ]
-    },
-    {
-        "id": "31b07cc.c0ecd84",
-        "type": "comment",
-        "z": "ae9ccaa4.46eba8",
-        "name": "MQTT IN",
-        "info": "",
-        "x": 100,
-        "y": 800,
-        "wires": []
-    },
-    {
-        "id": "609b77d3.b793f",
+        "id": "142189e9.549936",
         "type": "switch",
-        "z": "ae9ccaa4.46eba8",
+        "z": "ba05b2a7.fa4168",
         "name": "3306-resourceId",
         "property": "parts[4]",
         "propertyType": "msg",
@@ -1372,21 +3018,21 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 690,
-        "y": 900,
+        "x": 693,
+        "y": 778,
         "wires": [
             [
-                "a060422a.8f4fa8"
+                "de590400.a43178"
             ],
             [
-                "5a76f698.e1035"
+                "2978240e.ce1864"
             ]
         ]
     },
     {
-        "id": "46900a40.2c2c74",
+        "id": "48405f54.0db638",
         "type": "switch",
-        "z": "ae9ccaa4.46eba8",
+        "z": "ba05b2a7.fa4168",
         "name": "Method",
         "property": "parts[1]",
         "propertyType": "msg",
@@ -1410,22 +3056,22 @@
         "checkall": "true",
         "repair": false,
         "outputs": 3,
-        "x": 320,
-        "y": 1060,
+        "x": 286.75,
+        "y": 849.25,
         "wires": [
             [
-                "8577a78.0634ed8"
+                "896b52a7.f2c778"
             ],
             [
-                "d1d03ef1.8096"
+                "66344ba2.f247d4"
             ],
             []
         ]
     },
     {
-        "id": "8577a78.0634ed8",
+        "id": "896b52a7.f2c778",
         "type": "switch",
-        "z": "ae9ccaa4.46eba8",
+        "z": "ba05b2a7.fa4168",
         "name": "POST-objectId",
         "property": "parts[2]",
         "propertyType": "msg",
@@ -1444,19 +3090,21 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 480,
-        "y": 1000,
+        "x": 480.5,
+        "y": 785.5,
         "wires": [
             [
-                "609b77d3.b793f"
+                "142189e9.549936"
             ],
-            []
+            [
+                "e076e74d.edcd68"
+            ]
         ]
     },
     {
-        "id": "a060422a.8f4fa8",
+        "id": "de590400.a43178",
         "type": "switch",
-        "z": "ae9ccaa4.46eba8",
+        "z": "ba05b2a7.fa4168",
         "name": "5850-sensorId",
         "property": "parts[3]",
         "propertyType": "msg",
@@ -1470,144 +3118,371 @@
                 "t": "eq",
                 "v": "2",
                 "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 880,
-        "y": 860,
-        "wires": [
-            [
-                "9e6b9922.c91d9"
-            ],
-            [
-                "d22cd4f2.12782"
-            ]
-        ]
-    },
-    {
-        "id": "5a76f698.e1035",
-        "type": "switch",
-        "z": "ae9ccaa4.46eba8",
-        "name": "5851-sensorId",
-        "property": "parts[3]",
-        "propertyType": "msg",
-        "rules": [
+            },
             {
                 "t": "eq",
-                "v": "1",
+                "v": "5",
                 "vt": "str"
             },
             {
                 "t": "eq",
-                "v": "2",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 880,
-        "y": 940,
-        "wires": [
-            [
-                "386d124c.1324ae"
-            ],
-            [
-                "879951da.40ef7"
-            ]
-        ]
-    },
-    {
-        "id": "d1d03ef1.8096",
-        "type": "switch",
-        "z": "ae9ccaa4.46eba8",
-        "name": "GET-objectId",
-        "property": "parts[2]",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "3306",
+                "v": "7",
                 "vt": "str"
             },
             {
                 "t": "eq",
-                "v": "3339",
+                "v": "9",
                 "vt": "str"
             }
         ],
         "checkall": "true",
         "repair": false,
-        "outputs": 2,
-        "x": 490,
-        "y": 1120,
-        "wires": [
-            [],
-            []
-        ]
-    },
-    {
-        "id": "d22cd4f2.12782",
-        "type": "link out",
-        "z": "ae9ccaa4.46eba8",
-        "name": "audio-player-in/1/3306/2/5850",
-        "links": [
-            "bbbf666f.7d5818"
-        ],
-        "x": 995,
-        "y": 880,
-        "wires": []
-    },
-    {
-        "id": "879951da.40ef7",
-        "type": "link out",
-        "z": "ae9ccaa4.46eba8",
-        "name": "audio-player-in/1/3306/2/5851",
-        "links": [
-            "f7f6c0e9.f4e2e"
-        ],
-        "x": 995,
-        "y": 960,
-        "wires": []
-    },
-    {
-        "id": "386d124c.1324ae",
-        "type": "link out",
-        "z": "ae9ccaa4.46eba8",
-        "name": "audio-player-in/1/3306/1/5851",
-        "links": [
-            "fc4c2500.9728c"
-        ],
-        "x": 995,
-        "y": 920,
-        "wires": []
-    },
-    {
-        "id": "9e6b9922.c91d9",
-        "type": "link out",
-        "z": "ae9ccaa4.46eba8",
-        "name": "1/3306/1/5850->",
-        "links": [
-            "76587dda.844ecc"
-        ],
-        "x": 995,
-        "y": 820,
-        "wires": []
-    },
-    {
-        "id": "bfa0c325.50f898",
-        "type": "subflow:747afc9e.ba585c",
-        "z": "ae9ccaa4.46eba8",
-        "name": "",
-        "env": [],
-        "x": 120,
-        "y": 1060,
+        "outputs": 5,
+        "x": 951.75,
+        "y": 819.25,
         "wires": [
             [
-                "46900a40.2c2c74"
+                "9f6d8dca.5b43e8"
+            ],
+            [
+                "9f363b78.e5b338"
+            ],
+            [
+                "dc0e63c.1140da"
+            ],
+            [
+                "75d5359a.247d1c"
+            ],
+            [
+                "4c2e5ca3.fded94"
             ]
         ]
+    },
+    {
+        "id": "4c58a4a1.fa3114",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "1/3306/2/5850",
+        "links": [
+            "7ecfde46.9976e",
+            "f37bd0a2.412fc8"
+        ],
+        "x": 1206.75,
+        "y": 799.25,
+        "wires": []
+    },
+    {
+        "id": "382b8f44.bd6608",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "device-out->",
+        "links": [
+            "86555b57.0ce178",
+            "c02c323b.a522e8",
+            "c924817e.c1dda8",
+            "cdfa2c16.a4346",
+            "a0851ee8.48fe4"
+        ],
+        "x": 891.75,
+        "y": 680.5,
+        "wires": [
+            [
+                "f619d7ef.b91128"
+            ]
+        ]
+    },
+    {
+        "id": "3b6400a5.a09e18",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "1/3306/1/5850",
+        "links": [
+            "7afbd790.a1ad7",
+            "782d9f43.e797b8"
+        ],
+        "x": 1206.75,
+        "y": 759.25,
+        "wires": []
+    },
+    {
+        "id": "9f6d8dca.5b43e8",
+        "type": "function",
+        "z": "ba05b2a7.fa4168",
+        "name": "setP",
+        "func": "if(msg.payload === \"true\" || msg.payload === true || msg.payload === \"1\" || msg.payload === 1 ) {\n   msg.payload = true;\n} else if(msg.payload === \"false\" || msg.payload === false || msg.payload === \"0\" || msg.payload === 0 ) {\n   msg.payload = false;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1121.75,
+        "y": 759.25,
+        "wires": [
+            [
+                "3b6400a5.a09e18"
+            ]
+        ]
+    },
+    {
+        "id": "9f363b78.e5b338",
+        "type": "function",
+        "z": "ba05b2a7.fa4168",
+        "name": "setP",
+        "func": "if(msg.payload === \"true\" || msg.payload === true || msg.payload === \"1\" || msg.payload === 1 ) {\n   msg.payload = true;\n} else if(msg.payload === \"false\" || msg.payload === false || msg.payload === \"0\" || msg.payload === 0 ) {\n   msg.payload = false;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1121.75,
+        "y": 799.25,
+        "wires": [
+            [
+                "4c58a4a1.fa3114"
+            ]
+        ]
+    },
+    {
+        "id": "7d4028f6.f232a",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "1/3306/5/5850",
+        "links": [
+            "dcaf625f.4de11"
+        ],
+        "x": 1206.75,
+        "y": 839.25,
+        "wires": []
+    },
+    {
+        "id": "dc0e63c.1140da",
+        "type": "function",
+        "z": "ba05b2a7.fa4168",
+        "name": "setP",
+        "func": "if(msg.payload === \"true\" || msg.payload === true || msg.payload === \"1\" || msg.payload === 1 ) {\n   msg.payload = true;\n} else if(msg.payload === \"false\" || msg.payload === false || msg.payload === \"0\" || msg.payload === 0 ) {\n   msg.payload = false;\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1121.75,
+        "y": 839.25,
+        "wires": [
+            [
+                "7d4028f6.f232a"
+            ]
+        ]
+    },
+    {
+        "id": "b1a4be52.4ae218",
+        "type": "change",
+        "z": "ba05b2a7.fa4168",
+        "name": "sensor-5-5850",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "sensor-5.resources[\"5850\"]",
+                "tot": "global"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 963,
+        "y": 1478,
+        "wires": [
+            [
+                "5d24ec06.c8842c"
+            ]
+        ]
+    },
+    {
+        "id": "5d24ec06.c8842c",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "1/3306/5/5850",
+        "links": [
+            "dcaf625f.4de11"
+        ],
+        "x": 1098,
+        "y": 1478,
+        "wires": []
+    },
+    {
+        "id": "dd722550.b2ed8",
+        "type": "inject",
+        "z": "ba05b2a7.fa4168",
+        "name": "refreshState",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1.5",
+        "x": 743,
+        "y": 1578,
+        "wires": [
+            [
+                "b1a4be52.4ae218",
+                "e6b6cde3.ed8e8",
+                "90ebeab1.b52148",
+                "4553bbdb.95e754",
+                "af7546f.009ddb8",
+                "b1793d88.91925"
+            ]
+        ]
+    },
+    {
+        "id": "33fa683b.647f2",
+        "type": "comment",
+        "z": "ba05b2a7.fa4168",
+        "name": "Sensors State",
+        "info": "",
+        "x": 733,
+        "y": 1378,
+        "wires": []
+    },
+    {
+        "id": "7026ec5b.dc1164",
+        "type": "comment",
+        "z": "ba05b2a7.fa4168",
+        "name": "Sensors presentations",
+        "info": "## Protocol\n\n+prefixedDevEui = devEui+inPrefix\n+method = 0 (\"HEAD\") | 1 (\"POST\") | 2 (\"GET\") | 3 (\"Internal\") | 4 (\"STREAM\")\n\n+prefixedDevEui/+method/+omaObjectId/+nativeSensorId/omaResourceId",
+        "x": 163,
+        "y": 1378,
+        "wires": []
+    },
+    {
+        "id": "d42c5b8f.93b2f8",
+        "type": "inject",
+        "z": "ba05b2a7.fa4168",
+        "name": "HEAD/3306/1/5850",
+        "topic": "0/3306/1/5850",
+        "payload": "digital_input",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "x": 223,
+        "y": 1438,
+        "wires": [
+            [
+                "cdfa2c16.a4346"
+            ]
+        ]
+    },
+    {
+        "id": "17c981fa.aea886",
+        "type": "inject",
+        "z": "ba05b2a7.fa4168",
+        "name": "HEAD/3306/2/5850",
+        "topic": "0/3306/2/5850",
+        "payload": "digital_input",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "x": 223,
+        "y": 1478,
+        "wires": [
+            [
+                "cdfa2c16.a4346"
+            ]
+        ]
+    },
+    {
+        "id": "cdfa2c16.a4346",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "device-presentations->",
+        "links": [
+            "382b8f44.bd6608"
+        ],
+        "x": 555,
+        "y": 1520,
+        "wires": []
+    },
+    {
+        "id": "34cf187d.81f108",
+        "type": "ui_button",
+        "z": "ba05b2a7.fa4168",
+        "name": "POST/3306/1/5850",
+        "group": "6475a0bc.511ec8",
+        "order": 5,
+        "width": "3",
+        "height": "1",
+        "passthru": false,
+        "label": "button-1",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "topic": "1/3306/1/5850",
+        "x": 530,
+        "y": 2720,
+        "wires": [
+            [
+                "c924817e.c1dda8"
+            ]
+        ]
+    },
+    {
+        "id": "782d9f43.e797b8",
+        "type": "link in",
+        "z": "ba05b2a7.fa4168",
+        "name": "SWITCH/3306/1/5850",
+        "links": [
+            "3b6400a5.a09e18"
+        ],
+        "x": 155,
+        "y": 2720,
+        "wires": [
+            [
+                "34cf187d.81f108"
+            ]
+        ]
+    },
+    {
+        "id": "c924817e.c1dda8",
+        "type": "link out",
+        "z": "ba05b2a7.fa4168",
+        "name": "interfaces-out",
+        "links": [
+            "382b8f44.bd6608"
+        ],
+        "x": 975,
+        "y": 2860,
+        "wires": []
+    },
+    {
+        "id": "f6f7c847.45d01",
+        "type": "ui_group",
+        "z": "",
+        "name": "Server",
+        "tab": "225c85b6.231b22",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "6475a0bc.511ec8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Device-interfaces",
+        "tab": "245fbcc9.ef3ee4",
+        "order": 2,
+        "disp": false,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "245fbcc9.ef3ee4",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Home",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
     }
 ]
