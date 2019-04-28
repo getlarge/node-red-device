@@ -11,6 +11,9 @@
   "dependencies": {
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
+    "express-basic-auth": "^1.2.0",
+    "express-session": "^1.16.1",
+    "localtunnel": "^1.9.1",
     "node-red": "^0.20.5",
     "node-red-admin": "^0.1.5",
     "node-red-dashboard": "^2.14.0",
@@ -57,6 +60,7 @@
   "eslintIgnore": [
     "/public/",
     ".config.json",
+    "/lib/uitemplates/",
     "/docs/",
     "/node_modules/"
   ],
