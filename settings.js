@@ -1,26 +1,43 @@
-/**
- * Copyright 2013, 2015 IBM Corp.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- **/
+const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
 
 // The `https` setting requires the `fs` module. Uncomment the following
 // to make it available:
 //var fs = require("fs");
 
+const result = dotenv.config();
+if (result.error) {
+  throw result.error;
+}
+
+const conf = {
+  name: result.parsed.NODE_NAME,
+  port: Number(result.parsed.NODE_RED_PORT),
+  httpAdminRoot: result.parsed.NODE_RED_ADMIN_ROOT,
+  httpNodeRoot: result.parsed.NODE_RED_API_ROOT,
+  uiPath: result.parsed.NODE_RED_UI_PATH,
+  username: result.parsed.NODE_RED_USERNAME || null,
+  passHash: result.parsed.NODE_RED_PASSHASH || null,
+  userDir: result.parsed.NODE_RED_USER_DIR,
+  credentialSecret: result.parsed.NODE_RED_CREDENTIAL_SECRET || null,
+  storeType: result.parsed.NODE_RED_STORE_TYPE,
+  aloesEmail: result.parsed.ALOES_USER_EMAIL,
+  aloesPassword: result.parsed.ALOES_USER_PASSWORD,
+  aloesHost: result.parsed.ALOES_HTTP_HOST,
+  aloesPort: Number(result.parsed.ALOES_HTTP_PORT),
+  tunnel: result.parsed.TUNNEL_URL,
+};
+let port = conf.port || 1880;
+let userDir = conf.userDir || './';
+if (!conf.aloesPassword) {
+  conf.aloesPassword = 'test';
+}
+const adminPassHash = bcrypt.hashSync(conf.aloesPassword, 8);
+process.env.NODE_RED_ADMIN_PASSHASH = adminPassHash.toString();
+
 module.exports = {
   // the tcp port that the Node-RED web server is listening on
-  uiPort: 1880,
+  uiPort: port,
 
   // By default, the Node-RED UI accepts connections on all IPv4 interfaces.
   // The following property can be used to listen on a specific interface. For
@@ -43,32 +60,13 @@ module.exports = {
   // The maximum length, in characters, of any message sent to the debug sidebar tab
   debugMaxLength: 1000,
 
-  // The file containing the flows. If not set, it defaults to flows_<hostname>.json
-  flowFile: 'flows.json',
-
-  // To enabled pretty-printing of the flow within the flow file, set the following
-  //  property to true:
+  httpAdminRoot: conf.httpAdminRoot || '/red',
+  httpNodeRoot: conf.httpNodeRoot || '/api',
+  ui: { path: conf.uiPath || 'ui' },
+  userDir,
+  nodesDir: conf.nodesDir || `${userDir}.config.json`,
+  flowFile: conf.flowFile || `${userDir}flows.json`,
   flowFilePretty: true,
-
-  // By default, all user data is stored in the Node-RED install directory. To
-  // use a different location, the following property can be used
-  //userDir: '/home/nol/.node-red/',
-
-  // Node-RED scans the `nodes` directory in the install directory to find nodes.
-  // The following property can be used to specify an additional directory to scan.
-  //nodesDir: '/home/nol/.node-red/nodes',
-
-  // By default, the Node-RED UI is available at http://localhost:1880/
-  // The following property can be used to specifiy a different root path.
-  // If set to false, this is disabled.
-  //httpAdminRoot: '/admin',
-
-  // Some nodes, such as HTTP In, can be used to listen for incoming http requests.
-  // By default, these are served relative to '/'. The following property
-  // can be used to specifiy a different root path. If set to false, this is
-  // disabled.
-  //httpNodeRoot: '/red-nodes',
-
   // The following property can be used in place of 'httpAdminRoot' and 'httpNodeRoot',
   // to apply the same root to both parts.
   //httpRoot: '/red',
@@ -82,20 +80,25 @@ module.exports = {
   // -----------------
   // To password protect the Node-RED editor and admin API, the following
   // property can be used. See http://nodered.org/docs/security.html for details.
-  // adminAuth: {
-  //    type: "credentials",
-  //    users: [{
-  //        username: "",
-  //        password: "",
-  //        permissions: "*"
-  //    }]
-  // },
+  adminAuth: {
+    type: 'credentials',
+    users: [
+      {
+        username: conf.aloesEmail,
+        password: adminPassHash.toString(),
+        permissions: '*',
+      },
+    ],
+  },
 
   // To password protect the node-defined HTTP endpoints (httpNodeRoot), or
   // the static content (httpStatic), the following properties can be used.
   // The pass field is a bcrypt hash of the password.
   // See http://nodered.org/docs/security.html#generating-the-password-hash
-  //httpNodeAuth: {user:"user",pass:"$2a$08$zZWtXTja0fB1pzD4sHCMyOCMYz2Z6dNbM6tl8sJogENOMcxWV9DN."},
+  httpNodeAuth: {
+    user: 'test',
+    pass: '2a$08$XU.UmQtnB/1jeWNHVybxsOVWywi9cLSu36p91WE.78AZzIWuQ73/K.',
+  },
   //httpStaticAuth: {user:"user",pass:"$2a$08$zZWtXTja0fB1pzD4sHCMyOCMYz2Z6dNbM6tl8sJogENOMcxWV9DN."},
 
   // The following property can be used to enable HTTPS
@@ -139,28 +142,22 @@ module.exports = {
   //   next();
   //},
 
-  // Anything in this hash is globally available to all functions.
-  // It is accessed as context.global.
-  // eg:
-  //    functionGlobalContext: { os:require('os') }
-  // can be accessed in a function block as:
-  //    context.global.os
-
   functionGlobalContext: {
     processEnv: process.env,
-    // moment:require('moment')
-    // os:require('os'),
-    // octalbonescript:require('octalbonescript'),
-    // jfive:require("johnny-five"),
-    // j5board:require("johnny-five").Board({repl:false})
   },
 
-  // The following property can be used to order the categories in the editor
-  // palette. If a node's category is not in the list, the category will get
-  // added to the end of the palette.
-  // If not set, the following default order is used:
-  //paletteCategories: ['subflows', 'input', 'output', 'function', 'social', 'mobile', 'storage', 'analysis', 'advanced'],
-
+  paletteCategories: [
+    'subflows',
+    'aloes',
+    'input',
+    'output',
+    'function',
+    'social',
+    'mobile',
+    'storage',
+    'analysis',
+    'advanced',
+  ],
   // Configure the logging output
   logging: {
     // Only console logging is currently supported
