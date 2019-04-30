@@ -1,0 +1,362 @@
+[
+    {
+        "id": "b5aac682.63b9d8",
+        "type": "function",
+        "z": "458d3692.b325",
+        "name": "setEnv",
+        "func": "try {\n    const processEnv = global.get(\"processEnv\");\n    if (!processEnv) throw new Error(\"process.env not available\");\n    // ALOES CONFIG\n    if (msg.payload.aloesMqttHost) {\n        processEnv.ALOES_MQTT_HOST = msg.payload.aloesMqttHost;\n    }    \n    if (msg.payload.aloesMqttPort) {\n        processEnv.ALOES_MQTT_PORT = msg.payload.aloesMqttPort;\n    }    \n    if (msg.payload.aloesUserEmail) {\n        processEnv.ALOES_USER_EMAIL = msg.payload.aloesUserEmail;\n    }  \n    if (msg.payload.aloesUserPassword) {\n        processEnv.ALOES_USER_PASSWORD = msg.payload.aloesUserPassword;\n    }  \n    if (env.get(\"debug\")) {\n        return [msg,msg];\n    }\n    return [msg,null];\n}catch(error){\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 890,
+        "y": 360,
+        "wires": [
+            [],
+            [
+                "2999b2d3.493c86"
+            ]
+        ]
+    },
+    {
+        "id": "e4662451.59273",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttPort",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_MQTT_PORT",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 360,
+        "wires": [
+            [
+                "b08245a9.089538"
+            ]
+        ]
+    },
+    {
+        "id": "6c2a0727.2979c8",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttHost",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_MQTT_HOST",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 320,
+        "wires": [
+            [
+                "d0222c35.b72bf8"
+            ]
+        ]
+    },
+    {
+        "id": "b08245a9.089538",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "MQTT Port",
+        "tooltip": "",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 360,
+        "wires": [
+            [
+                "eb8d1c4d.852b48"
+            ]
+        ]
+    },
+    {
+        "id": "d0222c35.b72bf8",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "MQTT Host",
+        "tooltip": "",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 320,
+        "wires": [
+            [
+                "39c39f5e.88568"
+            ]
+        ]
+    },
+    {
+        "id": "eb8d1c4d.852b48",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttPort",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesMqttPort",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 360,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "39c39f5e.88568",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesMqttHost",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesMqttHost",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 320,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "96519be8.65e4e",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserEmail",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_USER_EMAIL",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 420,
+        "wires": [
+            [
+                "ab9a023f.b8c4e"
+            ]
+        ]
+    },
+    {
+        "id": "ab9a023f.b8c4e",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "Aloes Email",
+        "tooltip": "use the same email address as defined on aloes",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 450,
+        "y": 420,
+        "wires": [
+            [
+                "f90078f8.732a7"
+            ]
+        ]
+    },
+    {
+        "id": "f90078f8.732a7",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserEmail",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesUserEmail",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 420,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "2999b2d3.493c86",
+        "type": "debug",
+        "z": "458d3692.b325",
+        "name": "aloesSettingUpdate",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1100,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "a943f8d6.f04308",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserPassword",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "ALOES_USER_PASSWORD",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 300,
+        "y": 460,
+        "wires": [
+            [
+                "ead9a53e.7fbfc8"
+            ]
+        ]
+    },
+    {
+        "id": "ead9a53e.7fbfc8",
+        "type": "ui_text_input",
+        "z": "458d3692.b325",
+        "name": "",
+        "label": "Aloes password",
+        "tooltip": "use the same password as defined on aloes",
+        "group": "47b4645b.9aa6f4",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "",
+        "x": 460,
+        "y": 460,
+        "wires": [
+            [
+                "ad5020ae.c2b1f"
+            ]
+        ]
+    },
+    {
+        "id": "ad5020ae.c2b1f",
+        "type": "change",
+        "z": "458d3692.b325",
+        "name": "aloesUserPassword",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.aloesUserPassword",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 660,
+        "y": 460,
+        "wires": [
+            [
+                "b5aac682.63b9d8"
+            ]
+        ]
+    },
+    {
+        "id": "47b4645b.9aa6f4",
+        "type": "ui_group",
+        "z": "",
+        "name": "Aloes",
+        "tab": "225c85b6.231b22",
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "225c85b6.231b22",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Settings",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": true
+    }
+]

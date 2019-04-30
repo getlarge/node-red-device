@@ -1,0 +1,183 @@
+[
+    {
+        "id": "ea7e6d6e.2ca03",
+        "type": "subflow",
+        "name": "set-sensor",
+        "info": "",
+        "category": "aloes",
+        "in": [
+            {
+                "x": 260,
+                "y": 220,
+                "wires": [
+                    {
+                        "id": "3d80b9f5.d6faf6"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 600,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "3d80b9f5.d6faf6",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 600,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "3d80b9f5.d6faf6",
+                        "port": 1
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "device_name",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "store_type",
+                "type": "str",
+                "value": "memory"
+            }
+        ]
+    },
+    {
+        "id": "3d80b9f5.d6faf6",
+        "type": "function",
+        "z": "ea7e6d6e.2ca03",
+        "name": "setSensor",
+        "func": "try {\n    if (msg.parts && msg.parts !== null) {\n        const storeType = env.get(\"store_type\") || \"memory\";\n        //  console.log('updateInstance', deviceName);\n        const method = msg.parts[1];\n        const objectId = msg.parts[2];\n        const sensorId = msg.parts[3];\n        const resourceId = msg.parts[4];\n        if (!method || !objectId || !sensorId || !resourceId) {\n            return [null,new Error(\"missing params\")];\n        }\n        let sensor;\n        global.get(`sensor-${sensorId}`, storeType, (err, res) => {\n            if (err) throw err;\n            sensor = res;\n        });\n        if (!sensor || sensor === null) {\n            sensor = {};\n        }\n        if (!sensor.resources) {\n            sensor.resources = {};\n        }\n        sensor.resources[resourceId] = msg.payload;\n        sensor.type = Number(objectId);\n        sensor.resource = Number(resourceId);\n        sensor.value = msg.payload;\n        if (method === \"1\") {\n            console.log('updateInstance', sensorId, sensor.type, sensor.resource);\n            global.set(`sensor-${sensorId}`, sensor, storeType, (err) => {\n                if(err) throw err;\n            });    \n        }\n        msg.payload = sensor;\n        const msg2 = {payload: sensor.value, topic: msg.topic, parts: msg.parts};\n        return [msg, msg2];\n    }\n    throw new Error(\"No msg.parts\")\n} catch(error){\n    //  console.log('updateInstance : error', error);\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 390,
+        "y": 220,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "cf8a3295.a3a6a8",
+        "type": "mqtt out",
+        "z": "19d73bc1.1b5ea4",
+        "name": "Aloes-in",
+        "topic": "",
+        "qos": "0",
+        "retain": "false",
+        "broker": "73978eb.2bfc27",
+        "x": 780,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "f8b1e0a7.9226c",
+        "type": "debug",
+        "z": "19d73bc1.1b5ea4",
+        "name": "Device-tx",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 320,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "f4cd42a2.18e118",
+        "type": "function",
+        "z": "19d73bc1.1b5ea4",
+        "name": "topicParser",
+        "func": "try {\n    if (msg.topic && msg.topic !== null) {\n        const t = msg.topic.split(\"/\");\n        const storeType = env.get(\"NODE_RED_STORE_TYPE\") || \"memory\";\n        const deviceName = env.get(\"DEVICE_NAME\");\n        if (!deviceName) throw new Error(\"no name found\");\n        let device;\n        global.get(deviceName, storeType, (err, res)=> {\n            if (err) throw err;\n            device = res;\n        });\n        if (!device) throw new Error(\"no device found\");\n        const method = t[0];\n        const objectId = t[1];\n        const sensorId = t[2];\n        const resourceId = t[3];\n        msg.topic = `${device.devEui}${device.outPrefix}/${method}/${objectId}/${sensorId}/${resourceId}`;\n        msg.parts = msg.topic.split(\"/\");\n        if (env.get(\"debug\")){\n            return [msg,msg];\n        }\n        return [msg,null];  \n    }\n    throw new Error(\"No msg.topic\");\n} catch(error){\n    //  console.log('error', error);\n    return error;\n}\n",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 350,
+        "y": 260,
+        "wires": [
+            [
+                "433de660.51c5a"
+            ],
+            [
+                "f8b1e0a7.9226c"
+            ]
+        ]
+    },
+    {
+        "id": "433de660.51c5a",
+        "type": "subflow:ea7e6d6e.2ca03",
+        "z": "19d73bc1.1b5ea4",
+        "name": "",
+        "env": [
+            {
+                "name": "device_name",
+                "type": "env",
+                "value": "DEVICE_NAME"
+            },
+            {
+                "name": "store_type",
+                "type": "env",
+                "value": "NODE_RED_STORE_TYPE"
+            },
+            {
+                "name": "debug",
+                "type": "env",
+                "value": "debug"
+            }
+        ],
+        "x": 580,
+        "y": 260,
+        "wires": [
+            [],
+            [
+                "cf8a3295.a3a6a8"
+            ]
+        ]
+    },
+    {
+        "id": "f8de3f27.2af2d",
+        "type": "status",
+        "z": "19d73bc1.1b5ea4",
+        "name": "",
+        "scope": [
+            "cf8a3295.a3a6a8"
+        ],
+        "x": 220,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "73978eb.2bfc27",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "Aloes-Client",
+        "broker": "${ALOES_MQTT_HOST}",
+        "port": "${ALOES_MQTT_PORT}",
+        "clientid": "${DEVICE_DEVEUI}",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    }
+]

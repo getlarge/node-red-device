@@ -1,0 +1,16 @@
+[
+    {
+        "id": "612c5c4b.97670c",
+        "type": "function",
+        "z": "5617fd66.45c194",
+        "name": "setBoolean",
+        "func": "try {\n    const debug = env.get(\"debug\");\n    if (!msg || msg === null || !msg.payload) throw new Error(\"No input to parse\");\n    const resourceId = env.get(\"resource_id\");\n    if (!resourceId) throw new Error(\"no resource id set\")\n    const value = msg.payload;\n    if (typeof value === \"string\") {\n        msg.payload = value; \n    } else if (typeof value === \"object\" && value.type && value.data){\n        msg.payload = value.data.toString('utf-8');\n    } else if (Buffer.isBuffer(value)){\n        msg.payload = value.toString('utf-8');\n    }\n    if (msg.payload === \"true\" || msg.payload === \"1\" || msg.payload === 1) {\n        msg.payload = true;\n    } else if (msg.payload === \"false\" || msg.payload === \"0\" || msg.payload === 0) {\n        msg.payload = false;\n    }\n    if (debug) {\n        console.log(`set-boolean for ${resourceId} : ${msg.payload}`)\n    }\n    return msg;\n} catch(error) {\n    return error;\n}",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 570,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    }
+]
