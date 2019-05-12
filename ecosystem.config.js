@@ -9,10 +9,10 @@ module.exports = {
   apps: [
     {
       name: `${result.parsed.DEVICE_NAME}-${result.parsed.NODE_ENV}`,
-      script: './lib/server.js',
+      script: './dist/index.js',
       interpreter: 'node',
-      watch: ['lib/*', '.env', 'deploy/*'],
-      ignore_watch: ['lib/flows/*', 'lib/uitemplates/*', 'node_modules', '*.json'],
+      watch: ['lib/*', '.env'],
+      ignore_watch: ['lib/flows/*', 'lib/uitemplates/*', 'deploy/*', 'node_modules', '*.json'],
       watch_options: {
         followSymlinks: false,
       },
