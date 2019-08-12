@@ -16,9 +16,9 @@
     "express": "^4.16.4",
     "express-basic-auth": "^1.2.0",
     "express-session": "^1.16.1",
-    "localtunnel": "^1.9.1",
+    "localtunnel": "^1.9.2",
     "node-cleanup": "^2.1.2",
-    "node-red": "^0.20.5",
+    "node-red": "^0.20.6",
     "node-red-admin": "^0.1.5",
     "node-red-dashboard": "^2.15.3",
     "node-red-node-email": "^1.4.0"
