@@ -8,7 +8,8 @@
     "start": "node node_modules/node-red/red.js -v -u .",
     "start:dev": "cp deploy/.env_development .env ; NODE_ENV=development node ./nodemon.js",
     "start:local": "cp deploy/.env_local .env ; NODE_ENV=local node ./nodemon.js",
-    "deploy:local": "npm run build ; cp deploy/.env_local .env ; pm2 startOrRestart ecosystem.config.js --update-env"
+    "deploy:local": "npm run build ; cp deploy/.env_local .env ; pm2 startOrRestart ecosystem.config.js --update-env",
+    "deploy:stage": "npm run build ; cp deploy/.env_staging .env ; pm2 startOrRestart ecosystem.config.js --update-env"
   },
   "dependencies": {
     "@babel/runtime": "^7.4.4",
