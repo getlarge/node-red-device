@@ -12,10 +12,10 @@ NODE_RED_SESSION_SECRET : used for express session
 NODE_RED_STORE_TYPE : used to select default storage method ( can be "memoryOnly" or "file" )
 ALOES_HTTP_HOST : Aloes HTTP server host
 ALOES_HTTP_PORT : Aloes HTTP server port
-ALOES_HTTP_SECURE : false/true Aloes HTTP/HTTPS
+ALOES_HTTP_SECURE : empty or true Aloes HTTP/HTTPS
 ALOES_MQTT_HOST : Aloes MQTT / WS server host
 ALOES_MQTT_PORT : Aloes MQTT / WS server port
-ALOES_MQTT_SECURE : false/true Aloes MQTT/MQTTS
+ALOES_MQTT_SECURE : empty or true Aloes MQTT/MQTTS
 ALOES_USER_EMAIL : username to log on Node-red admin interface
 ALOES_USER_PASSWORD : password to log on Node-red admin interface
 DEVICE_DEVEUI : Device EUI used for registration
@@ -62,12 +62,12 @@ npm install -g pm2
 Edit ecosystem.config.js, then
 
 ```
-pm2 start ecosystem.config.js
+npm run deploy:local
 ```
 
 If you want autorestart
 
 ```
-pm2 save
 pm2 startup
+pm2 save
 ```
