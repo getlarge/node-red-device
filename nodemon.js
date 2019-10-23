@@ -4,7 +4,7 @@ nodemon({
   script: 'lib/index.js',
   ext: 'js json',
   watch: ['lib/*', '*.js', '.env'],
-  ignore: ['lib/flows/*', 'lib/uitemplates/*', 'deploy', 'nodes_modules', '*.test.js', '*.json'],
+  ignore: ['lib/functions/*', 'lib/flows/*', 'lib/uitemplates/*', 'deploy', 'nodes_modules', '*.test.js', '*.json'],
   execMap: {
     js: './node_modules/@babel/node/bin/babel-node.js',
   },
