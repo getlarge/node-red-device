@@ -4,11 +4,12 @@
   "description": "Node-RED device",
   "scripts": {
     "lint": "npx eslint --ext js .",
-    "build": "npx babel lib --out-dir dist --ignore './lib/uitemplates/*'",
+    "clean": "rm -rf dist && mkdir dist",
+    "build": "npm run clean ; npx babel lib --out-dir dist --copy-files --ignore './lib/uitemplates/*','./lib/functions/*'",
     "start": "node node_modules/node-red/red.js -v -u .",
     "start:dev": "cp deploy/.env_development .env ; NODE_ENV=development node ./nodemon.js",
-    "start:local": "cp deploy/.env_local .env ; NODE_ENV=local node  --max-old-space-size=2048 --max-memory-restart=1024 ./nodemon.js",
-    "start:stage": "cp deploy/.env_staging .env ; NODE_ENV=local node  --max-old-space-size=2048 --max-memory-restart=1024 ./nodemon.js",
+    "start:local": "cp deploy/.env_local .env ; NODE_ENV=local node --max-old-space-size=2048 ./nodemon.js",
+    "start:stage": "cp deploy/.env_staging .env ; NODE_ENV=local node --max-old-space-size=2048 ./nodemon.js",
     "deploy:local": "npm run build ; cp deploy/.env_local .env ; pm2 startOrRestart ecosystem.config.js --update-env",
     "deploy:stage": "npm run build ; cp deploy/.env_staging .env ; pm2 startOrRestart ecosystem.config.js --update-env"
   },
@@ -20,6 +21,7 @@
     "express-session": "^1.16.1",
     "localtunnel": "^1.9.2",
     "node-cleanup": "^2.1.2",
+    "node-lame": "^1.2.0",
     "node-red": "^0.20.6",
     "node-red-admin": "^0.1.5",
     "node-red-dashboard": "^2.15.3",
@@ -105,6 +107,7 @@
   "eslintIgnore": [
     "/public/",
     ".config.json",
+    "/lib/functions/",
     "/lib/uitemplates/",
     "/dist/",
     "/docs/",
