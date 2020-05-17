@@ -8,7 +8,7 @@ RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 
 COPY --chown=node package*.json ./
-COPY --chown=node .config.json ./
+# COPY --chown=node .config.json ./
 COPY --chown=node settings.js ./
 COPY --chown=node .env ./
 COPY --chown=node lib/ ./lib/
