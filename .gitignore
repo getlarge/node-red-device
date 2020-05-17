@@ -36,6 +36,7 @@ node_modules
 .DS_Store
 
 # Node-RED
+/dist/
 .config.json
 .sessions.json
 *json.backup

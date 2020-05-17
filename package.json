@@ -6,12 +6,15 @@
     "lint": "npx eslint --ext js .",
     "clean": "rm -rf dist && mkdir dist",
     "build": "npm run clean ; npx babel lib --out-dir dist --copy-files --ignore './lib/uitemplates/*','./lib/functions/*'",
+    "build:docker": "docker build -t getlarge/node-red-device:staging .",
     "start": "node node_modules/node-red/red.js -v -u .",
     "start:dev": "cp deploy/.env_development .env ; NODE_ENV=development node ./nodemon.js",
     "start:local": "cp deploy/.env_local .env ; NODE_ENV=local node --max-old-space-size=2048 ./nodemon.js",
     "start:stage": "cp deploy/.env_staging .env ; NODE_ENV=local node --max-old-space-size=2048 ./nodemon.js",
+    "start:docker": "cp deploy/.env_docker .env ; docker run -p 8000:8000 -d getlarge/node-red-device:staging",
     "deploy:local": "npm run build ; cp deploy/.env_local .env ; pm2 startOrRestart ecosystem.config.js --update-env",
-    "deploy:stage": "npm run build ; cp deploy/.env_staging .env ; pm2 startOrRestart ecosystem.config.js --update-env"
+    "deploy:stage": "npm run build ; cp deploy/.env_staging .env ; pm2 startOrRestart ecosystem.config.js --update-env",
+    "stop:docker": "docker stop getlarge/node-red-device:staging"
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",

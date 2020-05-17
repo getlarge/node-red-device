@@ -22,6 +22,6 @@ nodemon
   .on('start', () => {
     console.log('App has started');
   })
-  .on('restart', files => {
+  .on('restart', (files) => {
     console.log('App restarted due to: ', files);
   });
